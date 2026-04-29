@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function existingUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && existingUserDoc().role == 'admin';
+    }
+
+    // Devotional content — public read, admin-only write.
+    match /devotionals/{key} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // User profile + role document.
+    // Each user can read/create their own profile but never escalate their own role.
+    // Only admins can change roles or read other users' docs.
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == 'reader';
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && request.auth.uid == uid
+          && request.resource.data.role == resource.data.role
+        );
+      allow delete: if isAdmin();
+    }
+
+    // Default deny anything else.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

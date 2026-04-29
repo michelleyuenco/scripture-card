@@ -1,0 +1,103 @@
+/* ─────────────────────────────────────────────────────────────
+   全年靈修書 — design tokens + base styles
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --paper: #F5F1EA;
+  --paper-2: #EFE9DD;
+  --paper-edge: #E5DDCB;
+  --ink: #1A1410;
+  --ink-2: #3A2F26;
+  --ink-3: #6B5B4A;
+  --ink-mute: #9A8B78;
+  --gold: #B08D4E;
+  --gold-deep: #8B6B33;
+  --gold-soft: #D9BA82;
+  --rule: #D8CDB6;
+  --shadow: 0 30px 80px -40px rgba(40, 28, 14, 0.35),
+            0 12px 30px -20px rgba(40, 28, 14, 0.18);
+}
+
+[data-theme="dark"] {
+  --paper: #15110D;
+  --paper-2: #1D1814;
+  --paper-edge: #2A221B;
+  --ink: #F1E8D8;
+  --ink-2: #DDD0BB;
+  --ink-3: #B5A48C;
+  --ink-mute: #7E6F5B;
+  --gold: #D9BA82;
+  --gold-deep: #B08D4E;
+  --gold-soft: #8B6B33;
+  --rule: #3A2F23;
+  --shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.6),
+            0 12px 30px -20px rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Noto Serif TC", "Songti TC", "PingFang TC", serif;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background 400ms ease, color 400ms ease;
+}
+
+body {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Subtle paper texture — pure CSS, no SVG drawing */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(120, 90, 50, 0.035) 1px, transparent 1px),
+    radial-gradient(rgba(120, 90, 50, 0.025) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 2px;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+[data-theme="dark"] body::before {
+  background-image:
+    radial-gradient(rgba(217, 186, 130, 0.04) 1px, transparent 1px),
+    radial-gradient(rgba(217, 186, 130, 0.025) 1px, transparent 1px);
+  mix-blend-mode: screen;
+}
+
+/* Shared utility */
+.serif-en { font-family: "Cormorant Garamond", "Cormorant", serif; }
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+.gold-rule {
+  display: block;
+  height: 1px;
+  background: var(--gold);
+  width: 56px;
+  border: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Buttons base */
+button { font-family: inherit; cursor: pointer; }
+
+/* Focus */
+:focus-visible {
+  outline: 1.5px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
