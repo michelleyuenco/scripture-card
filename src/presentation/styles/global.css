@@ -78,6 +78,13 @@ body,
   min-height: 100%;
 }
 
+/* iOS Safari sometimes ignores overflow-x on body in isolation; pinning
+   it on html as well prevents a stray pixel of overflow from rendering
+   the page slightly shifted with extra space on one side. */
+html {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--paper);
   color: var(--ink);
@@ -506,12 +513,12 @@ a:hover {
   color: var(--ink);
 }
 
-/* Reading body — 2 columns desktop, 1 on mobile */
+/* Reading body — plain block flow on mobile, 2 columns on desktop.
+   Mobile-first ordering avoids leaving a single-column fragmented
+   container active on phones (iOS Safari has rendering quirks with
+   column-count: 1 that can leave consistent gutters on one side). */
 .reading-body {
   text-align: left;
-  column-count: 2;
-  column-gap: 48px;
-  column-rule: 1px solid var(--rule);
   font-size: 15.5px;
   line-height: 1.95;
   color: var(--ink-2);
@@ -519,15 +526,16 @@ a:hover {
 
 .reading-body p {
   margin: 0 0 1em;
-  text-wrap: pretty;
-  break-inside: avoid-column;
 }
 
-@media (max-width: 720px) {
+@media (min-width: 721px) {
   .reading-body {
-    column-count: 1;
-    column-rule: none;
-    column-gap: 0;
+    column-count: 2;
+    column-gap: 48px;
+    column-rule: 1px solid var(--rule);
+  }
+  .reading-body p {
+    break-inside: avoid-column;
   }
 }
 
@@ -1107,7 +1115,6 @@ textarea.field-control {
   color: var(--ink-2);
   margin: 0 auto;
   max-width: 560px;
-  text-wrap: pretty;
 }
 
 .verse-ref {
