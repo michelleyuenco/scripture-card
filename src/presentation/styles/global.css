@@ -964,36 +964,50 @@ textarea.field-control {
   }
 }
 
-/* Floating "scroll to top" — fades in once the user is well into the body
-   text. Sits bottom-right, above the condensed bar but below modal layers. */
+/* Floating "scroll to top" — fixed bottom-right of the viewport,
+   available throughout the body whenever the user has scrolled past
+   the hero. Tinted with translucent paper + soft ink so it floats
+   without competing with the text the user is reading. */
 .scroll-top-fab {
   position: fixed;
   right: var(--space-5);
   bottom: var(--space-5);
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-pill);
-  background: var(--ink);
-  color: var(--paper);
-  border: none;
+  background: rgba(245, 241, 234, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--rule);
+  color: var(--ink-3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 12px 28px -10px rgba(40, 28, 14, 0.45);
+  box-shadow: 0 6px 16px -10px rgba(40, 28, 14, 0.22);
   z-index: 25;
   transition:
     background 200ms ease,
-    transform 200ms ease;
+    color 200ms ease,
+    border-color 200ms ease;
 }
 
 .scroll-top-fab:hover {
-  background: var(--ink-2);
+  background: var(--paper-2);
+  color: var(--ink);
+  border-color: var(--ink-mute);
 }
 
 [data-theme='dark'] .scroll-top-fab {
-  background: var(--ink);
-  color: var(--paper);
+  background: rgba(21, 17, 13, 0.72);
+  border-color: rgba(255, 240, 210, 0.1);
+  color: var(--ink-3);
+}
+
+[data-theme='dark'] .scroll-top-fab:hover {
+  background: rgba(21, 17, 13, 0.92);
+  color: var(--ink);
+  border-color: rgba(255, 240, 210, 0.2);
 }
 
 /* Condensed sticky header — fades in once the original date+title scroll

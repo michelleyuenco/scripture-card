@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp, Check, Compass, Copy } from 'lucide-react';
@@ -81,7 +82,7 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
       } else if (dy < -6) {
         setHeaderVisible(true);
       }
-      setShowScrollTop(y > 240);
+      setShowScrollTop(y > 160);
       lastScrollY.current = y;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -221,24 +222,32 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
 
       <PageFooter />
 
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            key="scroll-top-fab"
-            type="button"
-            className="scroll-top-fab"
-            onClick={scrollToTop}
-            aria-label="回到頂部"
-            title="回到頂部"
-            initial={{ opacity: 0, scale: 0.85, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: 16 }}
-            transition={{ duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
-          >
-            <ArrowUp size={18} strokeWidth={1.75} aria-hidden />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Portaled to document.body so it escapes the containing block that
+          the global pageIn animation creates on every #root > * (the
+          animation's `to` keyframe leaves a non-none transform on the
+          page wrapper, which would otherwise position this `fixed` FAB
+          relative to the page rather than the viewport). */}
+      {createPortal(
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.button
+              key="scroll-top-fab"
+              type="button"
+              className="scroll-top-fab"
+              onClick={scrollToTop}
+              aria-label="回到頂部"
+              title="回到頂部"
+              initial={{ opacity: 0, scale: 0.85, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 16 }}
+              transition={{ duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
+            >
+              <ArrowUp size={18} strokeWidth={1.75} aria-hidden />
+            </motion.button>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </main>
   );
 };
