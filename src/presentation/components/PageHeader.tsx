@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { LogIn } from 'lucide-react';
 import { useAuth, useContainer } from '@presentation/hooks';
 import { Brand } from './Brand';
 import { ThemeToggle } from './ThemeToggle';
@@ -40,6 +41,7 @@ export const PageHeader = ({ leading, trailing }: PageHeaderProps) => {
               </button>
             ) : (
               <Link to="/sign-in" className="pill">
+                <LogIn size={14} aria-hidden="true" />
                 登入
               </Link>
             )}

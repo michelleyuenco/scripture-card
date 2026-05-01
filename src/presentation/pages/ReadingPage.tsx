@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Compass, Copy } from 'lucide-react';
+import { ArrowUp, Check, Compass, Copy } from 'lucide-react';
 import { DateTag, PageFooter, PageHeader } from '@presentation/components';
 import { useDevotional } from '@presentation/hooks';
 
@@ -42,7 +42,10 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
   const { entry, loading, error } = useDevotional(month, day);
   const [copied, setCopied] = useState(false);
   const [showCondensed, setShowCondensed] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const lastScrollY = useRef(0);
 
   // Reveal a condensed sticky header once the original title has scrolled
   // out of the viewport. Default root = window, since the page now scrolls
@@ -63,6 +66,30 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
     };
   }, [entry]);
 
+  // Headroom-style top-bar: hide on scroll-down, reveal on any scroll-up,
+  // always visible near the top. Threshold + 6px hysteresis avoids jitter
+  // on tiny finger-twitches. Also drives the scroll-to-top FAB visibility.
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastScrollY.current;
+      if (y < 32) {
+        setHeaderVisible(true);
+      } else if (dy > 6) {
+        setHeaderVisible(false);
+      } else if (dy < -6) {
+        setHeaderVisible(true);
+      }
+      setShowScrollTop(y > 240);
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   const copyVerse = () => {
     if (!entry) return;
     const text = `「${entry.verse}」\n— ${entry.verseRef}（${entry.verseTrans}）`;
@@ -72,15 +99,25 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
     });
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <main className="page">
-      <PageHeader
-        leading={
-          <Link to={`/card/${String(month)}/${String(day)}`} className="btn-ghost">
-            ← &nbsp;回到卡片
-          </Link>
-        }
-      />
+      <motion.div
+        className="reading-sticky-bar"
+        animate={{ y: headerVisible ? 0 : '-110%' }}
+        transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+      >
+        <PageHeader
+          leading={
+            <Link to={`/card/${String(month)}/${String(day)}`} className="btn-ghost">
+              ← &nbsp;回到卡片
+            </Link>
+          }
+        />
+      </motion.div>
 
       <AnimatePresence>
         {showCondensed && entry && (
@@ -183,6 +220,25 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
       </article>
 
       <PageFooter />
+
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="scroll-top-fab"
+            type="button"
+            className="scroll-top-fab"
+            onClick={scrollToTop}
+            aria-label="回到頂部"
+            title="回到頂部"
+            initial={{ opacity: 0, scale: 0.85, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 16 }}
+            transition={{ duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
+          >
+            <ArrowUp size={18} strokeWidth={1.75} aria-hidden />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </main>
   );
 };

@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { PageFooter, PageHeader } from '@presentation/components';
+import { ArrowLeft } from 'lucide-react';
+import { PageFooter, PageHeader, ThemeToggle } from '@presentation/components';
 import { useAuth, useContainer } from '@presentation/hooks';
 
 type Mode = 'sign-in' | 'sign-up';
@@ -70,11 +71,18 @@ export const SignInPage = () => {
   };
 
   return (
-    <main className="page page-fit">
-      <PageHeader />
+    <main className="page">
+      <PageHeader
+        leading={
+          <Link to="/" className="pill pill-icon" aria-label="回到首頁">
+            <ArrowLeft size={16} aria-hidden="true" />
+          </Link>
+        }
+        trailing={<ThemeToggle />}
+      />
 
-      <section className="page-fit-scroll center-grid section-signin">
-        <div className="surface signin-card">
+      <section className="center-grid section-signin">
+        <div className="signin-card">
           <div className="signin-header">
             <p className="kicker">{mode === 'sign-in' ? 'Welcome back' : 'Create account'}</p>
             <h1 className="signin-title">{mode === 'sign-in' ? '登入你的書頁' : '註冊新帳戶'}</h1>
@@ -150,12 +158,6 @@ export const SignInPage = () => {
             >
               {mode === 'sign-in' ? '立即註冊' : '前往登入'}
             </button>
-          </p>
-
-          <p className="signin-back-row">
-            <Link to="/" className="signin-back-link">
-              ← 回到首頁
-            </Link>
           </p>
         </div>
       </section>
