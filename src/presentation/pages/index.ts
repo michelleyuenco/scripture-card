@@ -1,4 +1,5 @@
 export { LandingPage } from './LandingPage';
+export { CardPage } from './CardPage';
 export { ReadingPage } from './ReadingPage';
 export { SignInPage } from './SignInPage';
 export { AdminPage } from './AdminPage';

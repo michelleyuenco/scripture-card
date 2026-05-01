@@ -1,9 +1,12 @@
 import type { DevotionalProps } from '@domain/entities';
 import type { DevotionalSummary } from '@domain/repositories';
-import type { DevotionalDTO, DevotionalSummaryDTO } from '@application/dto';
+import type { DevotionalDTO, DevotionalSource, DevotionalSummaryDTO } from '@application/dto';
 import { DayKey } from '@domain/value-objects';
 
-export const toDevotionalDTO = (entry: DevotionalProps): DevotionalDTO => ({
+export const toDevotionalDTO = (
+  entry: DevotionalProps,
+  source: DevotionalSource = 'firestore',
+): DevotionalDTO => ({
   key: entry.key,
   month: DayKey.monthOf(entry.key),
   day: DayKey.dayOf(entry.key),
@@ -16,7 +19,7 @@ export const toDevotionalDTO = (entry: DevotionalProps): DevotionalDTO => ({
   body: entry.body,
   reflection: entry.reflection,
   updatedAt: entry.updatedAt.toISOString(),
-  isPlaceholder: false,
+  source,
 });
 
 export const toSummaryDTO = (summary: DevotionalSummary): DevotionalSummaryDTO => ({
@@ -68,13 +71,12 @@ export const buildPlaceholderDTO = (month: number, day: number): DevotionalDTO =
     verseTrans: '新譯本',
     verse: '這是耶和華所定的日子，我們要在這一日歡喜快樂。',
     body: [
-      '（此為示範頁面 — 完整 365 日內容將於正式版本載入。）',
       '每一日都是上帝精心預備的禮物。在你的生日這天，祂特別將這段話留給你——不是因為你做了什麼，而是因為祂愛你。',
       '今天，把這一日交還給祂。讓祂引導你的腳步，讓祂的話語成為你心中的指南。',
       '你不需要走得很快，只需要走得正確。一日有一日的恩典，一日有一日的話語。',
     ],
     reflection: '這一日，你想對上帝說什麼？',
     updatedAt: new Date(0).toISOString(),
-    isPlaceholder: true,
+    source: 'placeholder',
   };
 };

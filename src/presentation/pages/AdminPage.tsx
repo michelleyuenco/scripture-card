@@ -21,45 +21,20 @@ export const AdminPage = () => {
   const filledCount = items.length;
 
   return (
-    <main className="page">
+    <main className="page page-fit">
       <PageHeader />
 
-      <section
-        style={{
-          maxWidth: 'var(--content-max)',
-          width: '100%',
-          margin: '32px auto 0',
-          display: 'grid',
-          gap: 32,
-        }}
-      >
-        <header style={{ display: 'grid', gap: 12 }}>
+      <section className="page-fit-stack section-admin">
+        <header className="admin-section-header">
           <p className="kicker">Admin</p>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: 16,
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="admin-title-row">
             <h1 className="section-title">每日靈修內容</h1>
-            <span style={{ color: 'var(--ink-3)', fontSize: 13, letterSpacing: '0.18em' }}>
-              已完成 {filledCount} / 366
-            </span>
+            <span className="admin-counter">已完成 {filledCount} / 366</span>
           </div>
-          <hr className="gold-rule" style={{ margin: 0 }} />
+          <hr className="gold-rule gold-rule--start" />
         </header>
 
-        <nav
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-          }}
-          aria-label="月份選擇"
-        >
+        <nav className="admin-month-nav" aria-label="月份選擇">
           {MONTHS.map((m) => (
             <button
               key={m}
@@ -72,9 +47,8 @@ export const AdminPage = () => {
           ))}
           <button
             type="button"
-            className="pill"
+            className="pill admin-month-nav-end"
             onClick={() => void refresh()}
-            style={{ marginLeft: 'auto' }}
             disabled={loading}
           >
             重新整理
@@ -82,7 +56,7 @@ export const AdminPage = () => {
         </nav>
 
         {error && (
-          <div className="banner banner-error" role="alert">
+          <div className="banner banner-error flex-static" role="alert">
             載入失敗：{error}
           </div>
         )}
@@ -90,31 +64,27 @@ export const AdminPage = () => {
         {loading && <div className="loader">載入中…</div>}
 
         {!loading && (
-          <div className="day-grid">
-            {days.map((d) => {
-              const key = `${month < 10 ? '0' : ''}${month}-${d < 10 ? '0' : ''}${d}`;
-              const existing = filledByKey.get(key);
-              return (
-                <Link key={key} to={`/admin/${month}/${d}`} className="day-card">
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                    }}
-                  >
-                    <span className="day-card-key">
-                      {MONTH_LABELS[month - 1] ?? month} · {d}
-                    </span>
-                    <span className={`status-pill${existing ? ' status-pill-filled' : ''}`}>
-                      {existing ? '已收錄' : '空白'}
-                    </span>
-                  </div>
-                  <span className="day-card-title">{existing?.title ?? '—— 尚未撰寫'}</span>
-                  {existing && <span className="day-card-meta">{existing.verseRef}</span>}
-                </Link>
-              );
-            })}
+          <div className="page-fit-scroll">
+            <div className="day-grid">
+              {days.map((d) => {
+                const key = `${month < 10 ? '0' : ''}${month}-${d < 10 ? '0' : ''}${d}`;
+                const existing = filledByKey.get(key);
+                return (
+                  <Link key={key} to={`/admin/${month}/${d}`} className="day-card">
+                    <div className="day-card-row">
+                      <span className="day-card-key">
+                        {MONTH_LABELS[month - 1] ?? month} · {d}
+                      </span>
+                      <span className={`status-pill${existing ? ' status-pill-filled' : ''}`}>
+                        {existing ? '已收錄' : '空白'}
+                      </span>
+                    </div>
+                    <span className="day-card-title">{existing?.title ?? '—— 尚未撰寫'}</span>
+                    {existing && <span className="day-card-meta">{existing.verseRef}</span>}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </section>

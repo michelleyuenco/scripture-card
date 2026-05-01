@@ -93,7 +93,9 @@ error codes.
 ## Design system
 
 Visual language is defined in `src/presentation/styles/global.css` as CSS custom properties.
-Use the tokens — don't hardcode colors:
+Use the tokens — don't hardcode colors or pixel values:
+
+### Color tokens
 
 | Token              | Use                                           |
 | ------------------ | --------------------------------------------- |
@@ -106,17 +108,54 @@ Use the tokens — don't hardcode colors:
 | `--rule`           | Hairlines, dividers, input borders            |
 | `--shadow`         | Elevated surfaces                             |
 
+### Spacing scale
+
+Every margin / padding / gap should resolve to one of these. Values not on the scale are
+a smell — round to the nearest step rather than inventing a custom value.
+
+| Token       | Pixels | Typical use                                  |
+| ----------- | ------ | -------------------------------------------- |
+| `--space-1` | 4px    | Hairline gap                                 |
+| `--space-2` | 8px    | Tight cluster (e.g. icon + label)            |
+| `--space-3` | 12px   | Default tight                                |
+| `--space-4` | 16px   | Default                                      |
+| `--space-5` | 24px   | Section padding, paragraph spacing           |
+| `--space-6` | 32px   | Between major elements                       |
+| `--space-7` | 48px   | Page rhythm                                  |
+| `--space-8` | 64px   | Hero spacing                                 |
+
+### Inline `style` is forbidden on DOM elements
+
+Enforced by `no-restricted-syntax` in `eslint.config.js`. Use a class from `global.css`
+that references the tokens. The rule matches lowercase JSX tags only — React components
+and `motion.*` elements are unaffected. Override with
+`// eslint-disable-next-line no-restricted-syntax -- reason` only for genuinely dynamic
+values (computed dimensions, animation outputs); see `DrumPicker.tsx` for the pattern.
+
+If you find yourself writing the same inline style twice, extract a semantic class
+(`landing-hero`, `verse-block`, `editor-actions`) into `global.css` rather than repeating.
+
+### Existing utility / semantic classes
+
+- **Buttons**: `btn-solid`, `btn-outline`, `btn-ghost`, `pill`.
+- **Surfaces**: `surface` (raised card with shadow + 1px rule border).
+- **Forms**: `field`, `field-control`, `field-label`, `field-grid`, `field-help`.
+- **Banners**: `banner`, `banner-error`, `banner-info`.
+- **Layout**: `page`, `page-fit` (kiosk: pin to one viewport, no scroll),
+  `page-fit-stack` / `page-fit-scroll` / `page-fit-actions` (sticky-action-bar pattern),
+  `top-bar`, `page-footer`.
+- **Layout primitives**: `stack` / `stack-{2..6}`, `cluster` / `cluster-{2..4}` (with
+  `cluster-justify-{center,between}`), `center-grid`, `text-center`, `flex-static`.
+- **Page sections**: `section-landing`, `section-reading`, `section-admin`,
+  `section-editor`, `section-signin`, `section-message`.
+
+### Fonts and theming
+
 Fonts: **Noto Serif TC** (zh body) and **Cormorant Garamond** (`.serif-en` for Latin display).
 Don't introduce new fonts.
 
 Dark mode is real — set via `data-theme="dark"` on `<html>`, controlled by `ThemeProvider`.
 Test new screens in both modes.
-
-Reusable utility classes already exist for buttons (`btn-solid`, `btn-outline`, `btn-ghost`,
-`pill`), surfaces (`surface`), forms (`field`, `field-control`, `field-label`, `field-grid`),
-banners (`banner`, `banner-error`, `banner-info`), and layout (`page`, `top-bar`, `page-footer`).
-Reach for these before writing inline styles for layout. Inline styles are fine for one-off
-token application (e.g. `color: 'var(--ink-3)'`).
 
 Responsive: mobile-first breakpoints live in `global.css`. The reading body uses CSS
 multi-column that collapses to single column under 720px — keep that pattern for any

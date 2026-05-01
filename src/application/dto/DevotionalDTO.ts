@@ -1,3 +1,5 @@
+export type DevotionalSource = 'firestore' | 'builtin' | 'placeholder';
+
 export interface DevotionalDTO {
   readonly key: string;
   readonly month: number;
@@ -11,7 +13,7 @@ export interface DevotionalDTO {
   readonly body: readonly string[];
   readonly reflection: string;
   readonly updatedAt: string;
-  readonly isPlaceholder: boolean;
+  readonly source: DevotionalSource;
 }
 
 export interface DevotionalSummaryDTO {

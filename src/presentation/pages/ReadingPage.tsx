@@ -23,9 +23,9 @@ export const ReadingPage = () => {
 };
 
 const InvalidDate = () => (
-  <main className="page">
+  <main className="page page-fit">
     <PageHeader />
-    <section style={{ display: 'grid', placeItems: 'center', textAlign: 'center', gap: 18 }}>
+    <section className="section-message">
       <p className="kicker">Not Found</p>
       <h1 className="section-title">這不是一個有效的日期</h1>
       <Link to="/" className="btn-solid">
@@ -50,16 +50,16 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
   };
 
   return (
-    <main className="page">
+    <main className="page page-fit">
       <PageHeader
         leading={
-          <Link to="/" className="btn-ghost">
-            ← &nbsp;另選日期
+          <Link to={`/card/${String(month)}/${String(day)}`} className="btn-ghost">
+            ← &nbsp;回到卡片
           </Link>
         }
       />
 
-      <article style={{ maxWidth: 720, margin: '32px auto 0', textAlign: 'center', width: '100%' }}>
+      <article className="page-fit-stack section-reading">
         {loading && <div className="loader">翻頁中…</div>}
         {error && !loading && (
           <div className="banner banner-error" role="alert">
@@ -68,133 +68,54 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
         )}
         {entry && !loading && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 48 }}>
-              <DateTag label={entry.dateLabel} />
-            </div>
+            <div className="page-fit-scroll">
+              <div className="reading-datetag-row">
+                <DateTag label={entry.dateLabel} />
+              </div>
 
-            <h1
-              style={{
-                fontSize: 'clamp(30px, 4.6vw, 52px)',
-                fontWeight: 500,
-                lineHeight: 1.25,
-                letterSpacing: '0.02em',
-                color: 'var(--ink)',
-                margin: '0 0 32px',
-              }}
-            >
-              {entry.title}
-            </h1>
+              <h1 className="reading-title">{entry.title}</h1>
 
-            <div style={{ position: 'relative', padding: '24px 0 28px' }}>
-              <div
-                aria-hidden
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 1,
-                  height: 22,
-                  background: 'var(--gold)',
-                }}
-              />
-              <p
-                style={{
-                  fontSize: 'clamp(16px, 1.4vw, 19px)',
-                  lineHeight: 2.0,
-                  color: 'var(--ink-2)',
-                  margin: '0 auto',
-                  maxWidth: 560,
-                  textWrap: 'pretty',
-                }}
-              >
-                『{entry.verse}』
-              </p>
-              <p
-                style={{
-                  marginTop: 18,
-                  fontSize: 13,
-                  letterSpacing: '0.16em',
-                  color: 'var(--gold-deep)',
-                  fontWeight: 500,
-                }}
-              >
-                {entry.verseRef}{' '}
-                {entry.verseTrans && (
-                  <span style={{ color: 'var(--ink-mute)', fontWeight: 400 }}>
-                    （{entry.verseTrans}）
-                  </span>
-                )}
-              </p>
-            </div>
-
-            <hr
-              style={{
-                width: 40,
-                margin: '12px auto 40px',
-                height: 1,
-                border: 0,
-                background: 'var(--rule)',
-              }}
-            />
-
-            <div className="reading-body">
-              {entry.body.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
-              ))}
-            </div>
-
-            {entry.reflection && (
-              <div
-                style={{
-                  marginTop: 56,
-                  padding: '32px 28px 36px',
-                  border: '1px solid var(--rule)',
-                  background: 'var(--paper-2)',
-                  textAlign: 'center',
-                  position: 'relative',
-                }}
-              >
-                <span
-                  className="serif-en"
-                  style={{
-                    position: 'absolute',
-                    top: -12,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'var(--paper)',
-                    padding: '0 14px',
-                    fontSize: 11,
-                    letterSpacing: '0.4em',
-                    textTransform: 'uppercase',
-                    color: 'var(--gold)',
-                  }}
-                >
-                  Reflect
-                </span>
-                <p
-                  style={{
-                    fontSize: 17,
-                    lineHeight: 1.85,
-                    margin: 0,
-                    fontStyle: 'italic',
-                    color: 'var(--ink-2)',
-                  }}
-                >
-                  {entry.reflection}
+              <div className="verse-block">
+                <div aria-hidden className="verse-tick" />
+                <p className="verse-text">『{entry.verse}』</p>
+                <p className="verse-ref">
+                  {entry.verseRef}{' '}
+                  {entry.verseTrans && <span className="verse-trans">（{entry.verseTrans}）</span>}
                 </p>
               </div>
-            )}
 
-            <div
-              style={{
-                marginTop: 56,
-                display: 'flex',
-                gap: 14,
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
+              <hr className="reading-divider" />
+
+              <div className="reading-body">
+                {entry.body.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
+
+              {entry.reflection && (
+                <div className="reflect-card">
+                  <span className="serif-en reflect-label">Reflect</span>
+                  <p className="reflect-text">{entry.reflection}</p>
+                </div>
+              )}
+
+              {entry.source === 'builtin' && (
+                <p aria-label="選錄篇章" title="選錄篇章" className="reading-source-mark">
+                  ✦
+                </p>
+              )}
+              {entry.source === 'placeholder' && (
+                <p
+                  aria-label="示範頁面"
+                  title="示範頁面 · 完整 365 日內容由管理員陸續上載"
+                  className="reading-source-mark reading-source-mark--quiet"
+                >
+                  ※
+                </p>
+              )}
+            </div>
+
+            <div className="page-fit-actions page-fit-actions--center">
               <button type="button" onClick={copyVerse} className="btn-outline">
                 {copied ? '已複製 ✓' : '複製經文'}
               </button>
@@ -202,19 +123,6 @@ const ReadingContent = ({ month, day }: { month: number; day: number }) => {
                 繼續探索 →
               </Link>
             </div>
-
-            {entry.isPlaceholder && (
-              <p
-                style={{
-                  marginTop: 36,
-                  fontSize: 12,
-                  letterSpacing: '0.2em',
-                  color: 'var(--ink-mute)',
-                }}
-              >
-                ※ 示範頁面 · 完整 365 日內容由管理員陸續上載
-              </p>
-            )}
           </>
         )}
       </article>

@@ -8,3 +8,5 @@ export type { DeleteDevotionalInput } from './DeleteDevotional';
 export { SignInWithGoogle } from './SignInWithGoogle';
 export { SignInWithEmail, SignUpWithEmail } from './SignInWithEmail';
 export { SignOut } from './SignOut';
+export { SubmitClaim } from './SubmitClaim';
+export { CheckForUpdate } from './CheckForUpdate';

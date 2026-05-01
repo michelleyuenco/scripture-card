@@ -7,37 +7,78 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function existingUserDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    // Returns the user's role string, or null when the profile doc is absent.
+    // Safe to call without an external exists() guard.
+    function userRole(uid) {
+      let path = /databases/$(database)/documents/users/$(uid);
+      return exists(path) ? get(path).data.role : null;
     }
 
     function isAdmin() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && existingUserDoc().role == 'admin';
+      return isSignedIn() && userRole(request.auth.uid) == 'admin';
     }
 
     // Devotional content — public read, admin-only write.
+    // Document id is "MM-DD" (see DayKey value object).
     match /devotionals/{key} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
 
     // User profile + role document.
-    // Each user can read/create their own profile but never escalate their own role.
-    // Only admins can change roles or read other users' docs.
+    // - Each authenticated user can read and create their own profile with role 'reader'.
+    // - Self-updates must preserve role and stay within the known field set.
+    // - Only admins can change roles, read other users' docs, or delete profiles.
+    // - First admin must be promoted manually in the Firebase console (see README).
     match /users/{uid} {
-      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
-      allow create: if isSignedIn()
-        && request.auth.uid == uid
-        && request.resource.data.role == 'reader';
+      function isOwnProfile() {
+        return isSignedIn() && request.auth.uid == uid;
+      }
+
+      function hasAllowedFields() {
+        return request.resource.data.keys()
+          .hasOnly(['email', 'displayName', 'role', 'createdAt']);
+      }
+
+      allow read: if isOwnProfile() || isAdmin();
+
+      allow create: if isOwnProfile()
+        && request.resource.data.role == 'reader'
+        && hasAllowedFields();
+
       allow update: if isAdmin()
         || (
-          isSignedIn()
-          && request.auth.uid == uid
+          isOwnProfile()
           && request.resource.data.role == resource.data.role
+          && hasAllowedFields()
         );
+
       allow delete: if isAdmin();
+    }
+
+    // Soft-copy / contact claims submitted from the public card screen.
+    // - Anyone (including unauthenticated visitors) can submit a claim.
+    // - Only admins can read or modify claims; clients can never edit/delete.
+    // - Shape is validated server-side so the collection can't be used as
+    //   a free-form data dump.
+    match /claims/{claimId} {
+      function validClaim() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['name', 'email', 'phone', 'month', 'day', 'createdAt'])
+          && data.keys().hasAll(['name', 'email', 'month', 'day', 'createdAt'])
+          && data.name is string && data.name.size() >= 1 && data.name.size() <= 60
+          && data.email is string && data.email.size() >= 3 && data.email.size() <= 254
+          && data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+          && (!('phone' in data) || data.phone == null
+              || (data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 20))
+          && data.month is int && data.month >= 1 && data.month <= 12
+          && data.day is int && data.day >= 1 && data.day <= 31
+          && data.createdAt == request.time;
+      }
+
+      allow read: if isAdmin();
+      allow create: if validClaim();
+      allow update, delete: if isAdmin();
     }
 
     // Default deny anything else.

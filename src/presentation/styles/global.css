@@ -22,6 +22,18 @@
   --reading-max: 720px;
   --form-max: 880px;
 
+  /* Spacing scale — every margin/padding/gap in the UI should resolve to one
+     of these. Values not on the scale are a smell. The scale is shared across
+     light and dark themes. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
   color-scheme: light;
 }
 
@@ -113,6 +125,10 @@ body::before {
   width: 56px;
   border: 0;
   margin: 0 auto;
+}
+
+.gold-rule--start {
+  margin: 0;
 }
 
 .kicker {
@@ -208,6 +224,61 @@ a:hover {
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: 28px 40px 40px;
+}
+
+/* Variant for screens that must fit fully in the viewport (no scrolling) —
+   used for kiosk / large-touchscreen flows where every interactive element
+   has to be reachable without a scroll. */
+.page-fit {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.page-fit > * {
+  min-height: 0;
+}
+
+.page-fit .page-footer {
+  margin-top: 16px;
+}
+
+/* Inside .page-fit, the section often needs to host a scrolling region with
+   sticky action buttons. These helpers express that structure without making
+   each page reinvent it. */
+.page-fit-stack {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.page-fit-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  /* a touch of inline padding so the scrollbar doesn't crowd the content */
+  padding-right: 4px;
+}
+
+.page-fit-actions {
+  flex: 0 0 auto;
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.page-fit-actions--center {
+  justify-content: center;
+}
+
+.page-fit-actions--between {
+  justify-content: space-between;
 }
 
 @media (max-width: 720px) {
@@ -563,6 +634,80 @@ textarea.field-control {
   color: var(--ink-mute);
 }
 
+.day-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DrumPicker — wheel-style number picker. Dimensions come from
+   props (`width`, `itemHeight`, `visibleItems`) and are passed
+   inline; static styling lives here.
+   ───────────────────────────────────────────────────────────── */
+
+.drum-picker {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  perspective: 1000px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 22%,
+    black 78%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 22%,
+    black 78%,
+    transparent 100%
+  );
+}
+
+.drum-picker-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  border-top: 1px solid var(--gold-soft);
+  border-bottom: 1px solid var(--gold-soft);
+  background: rgba(176, 141, 78, 0.06);
+  z-index: 2;
+}
+
+[data-theme='dark'] .drum-picker-highlight {
+  background: rgba(217, 186, 130, 0.05);
+}
+
+.drum-picker-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  /* Single font stack covering both Latin numerals and zh-Hant labels.
+     A unified font keeps the wheel visually consistent whether the item
+     is `1` or `十一月`. */
+  font-family: 'Noto Serif TC', 'Cormorant Garamond', 'Songti TC', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink-mute);
+  letter-spacing: 0.02em;
+  transition: color 200ms ease;
+}
+
+.drum-picker-item--active {
+  color: var(--ink);
+  font-weight: 500;
+}
+
 /* Loader */
 .loader {
   text-align: center;
@@ -583,4 +728,1101 @@ textarea.field-control {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Layout primitives — for composing pages without inline `style`.
+   These are the only "utility" classes in the system. Anything
+   beyond them earns a semantic name below.
+   ───────────────────────────────────────────────────────────── */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+.stack-2 {
+  gap: var(--space-2);
+}
+.stack-3 {
+  gap: var(--space-3);
+}
+.stack-4 {
+  gap: var(--space-4);
+}
+.stack-5 {
+  gap: var(--space-5);
+}
+.stack-6 {
+  gap: var(--space-6);
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.cluster-2 {
+  gap: var(--space-2);
+}
+.cluster-3 {
+  gap: var(--space-3);
+}
+.cluster-4 {
+  gap: var(--space-4);
+}
+.cluster-justify-center {
+  justify-content: center;
+}
+.cluster-justify-between {
+  justify-content: space-between;
+}
+
+.center-grid {
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Pins a flex item so it neither grows nor shrinks. Used inside
+   .page-fit-stack to keep header/nav rows from collapsing when the
+   scrolling middle area runs out of room. */
+.flex-static {
+  flex: 0 0 auto;
+}
+
+/* Centered text-flow with a comfortable measure. Lets paragraphs read at
+   ~520px without stuffing each <p> with maxWidth/margin inline. */
+.measure {
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Page section wrappers — one per page kind. Each replaces an
+   inline `{ maxWidth, margin, width, display, gap }` block.
+   ───────────────────────────────────────────────────────────── */
+
+.section-landing {
+  width: 100%;
+  max-width: var(--reading-max);
+}
+
+.section-reading {
+  width: 100%;
+  max-width: var(--reading-max);
+  margin: var(--space-4) auto 0;
+  text-align: center;
+}
+
+.section-admin {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: var(--space-5) auto 0;
+  gap: var(--space-5);
+}
+
+.section-editor {
+  width: 100%;
+  max-width: var(--form-max);
+  margin: var(--space-5) auto 0;
+  gap: var(--space-4);
+}
+
+.section-signin {
+  align-content: center;
+}
+
+/* Generic centered-message section: kicker / heading / paragraph / link
+   stacked with 24px gap. Used for 404, restricted, invalid-date screens. */
+.section-message {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: var(--space-5);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Landing page
+   ───────────────────────────────────────────────────────────── */
+
+.landing-hero {
+  width: 100%;
+  max-width: var(--reading-max);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+}
+
+.landing-prompt {
+  font-size: 15px;
+  letter-spacing: 0.32em;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.landing-pickers {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border-radius: 4px;
+}
+
+.landing-pickers-sep {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: var(--gold);
+  padding: 0 var(--space-2);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Reading page
+   ───────────────────────────────────────────────────────────── */
+
+.reading-datetag-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-5);
+}
+
+.reading-title {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0 0 var(--space-5);
+}
+
+.verse-block {
+  position: relative;
+  padding: var(--space-4) 0 var(--space-4);
+}
+
+.verse-tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 18px;
+  background: var(--gold);
+}
+
+.verse-text {
+  font-size: clamp(15px, 1.3vw, 18px);
+  line-height: 1.85;
+  color: var(--ink-2);
+  margin: 0 auto;
+  max-width: 560px;
+  text-wrap: pretty;
+}
+
+.verse-ref {
+  margin-top: var(--space-3);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--gold-deep);
+  font-weight: 500;
+}
+
+.verse-trans {
+  color: var(--ink-mute);
+  font-weight: 400;
+}
+
+.reading-divider {
+  width: 40px;
+  margin: var(--space-2) auto var(--space-5);
+  height: 1px;
+  border: 0;
+  background: var(--rule);
+}
+
+.reflect-card {
+  margin-top: var(--space-6);
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  text-align: center;
+  position: relative;
+}
+
+.reflect-label {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--paper);
+  padding: 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.reflect-text {
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 0;
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.reading-source-mark {
+  margin-top: var(--space-5);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--ink-mute);
+  opacity: 0.7;
+}
+
+.reading-source-mark--quiet {
+  opacity: 0.55;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Sign-in page
+   ───────────────────────────────────────────────────────────── */
+
+.signin-card {
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(24px, 4vw, 40px);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.signin-header {
+  text-align: center;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.signin-title {
+  font-size: clamp(28px, 4vw, 36px);
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.signin-tagline {
+  color: var(--ink-3);
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.signin-google-btn {
+  letter-spacing: 0.18em;
+  padding: 14px var(--space-5);
+}
+
+.signin-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink-mute);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+}
+
+.signin-divider-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.signin-form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.signin-mode-row {
+  text-align: center;
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.signin-mode-toggle {
+  color: var(--gold-deep);
+  letter-spacing: 0.12em;
+  padding: 0;
+}
+
+.signin-back-row {
+  text-align: center;
+  margin: 0;
+}
+
+.signin-back-link {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--ink-mute);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Admin (list) page
+   ───────────────────────────────────────────────────────────── */
+
+.admin-section-header {
+  display: grid;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+
+.admin-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin-counter {
+  color: var(--ink-3);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+}
+
+.admin-month-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.admin-month-nav-end {
+  margin-left: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Admin editor page
+   ───────────────────────────────────────────────────────────── */
+
+.editor-header {
+  display: grid;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+.editor-subtitle {
+  color: var(--ink-3);
+  margin: 0;
+  letter-spacing: 0.12em;
+}
+
+.editor-status-pill {
+  margin-left: var(--space-3);
+}
+
+.editor-rule {
+  margin: 4px 0 0;
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.editor-fields {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.editor-action-danger {
+  color: #a04030;
+  letter-spacing: 0.18em;
+}
+
+.editor-action-end {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Date tag — gold flag-shape used in the reading hero
+   ───────────────────────────────────────────────────────────── */
+
+.date-tag {
+  background: var(--gold-deep);
+  color: #fbf3dd;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  letter-spacing: 0.18em;
+  padding: var(--space-3) 40px var(--space-5);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  display: inline-block;
+}
+
+.date-tag-large {
+  font-size: 22px;
+  padding: var(--space-4) 56px var(--space-6);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Restricted (admin gate denial) and 404
+   ───────────────────────────────────────────────────────────── */
+
+.restricted-text {
+  color: var(--ink-3);
+  max-width: 480px;
+  line-height: 1.8;
+}
+
+.notfound-text {
+  color: var(--ink-3);
+  max-width: 420px;
+  line-height: 1.8;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Page footer tagline (en italic)
+   ───────────────────────────────────────────────────────────── */
+
+.page-footer-tagline {
+  font-style: italic;
+  letter-spacing: 0.08em;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Brush / handwriting calligraphy — used on the daily card for
+   date + title. Primary face is LXGW WenKai TC, an open-source
+   handwriting-style font with comprehensive Traditional Chinese
+   coverage; falls back to Noto Serif TC (full coverage) so any
+   character not in the primary still renders consistently rather
+   than swapping to a system serif mid-word.
+   ───────────────────────────────────────────────────────────── */
+
+.brush-zh {
+  font-family: 'LXGW WenKai TC', 'Noto Serif TC', 'Songti TC', serif;
+  font-weight: 400;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Card screen — full-viewport, photo-backed devotional card.
+   Single exception in the app to the "all content visible without
+   scrolling" rule (see CLAUDE.md). The screen is sized to the
+   viewport so kiosk users can take phone photos of the display
+   without page chrome cluttering the shot. Controls are placed
+   as floating overlays that don't compete with the composition.
+   ───────────────────────────────────────────────────────────── */
+
+.card-screen {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--paper);
+  container-type: inline-size;
+}
+
+.card-screen-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Floating back affordance — small translucent pill, top-left.
+   On wide viewports it shows the icon plus a label; on viewports
+   ≤720px it collapses to an icon-only square button (see media
+   query at the bottom of the section). */
+.card-back {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 22px;
+  background: rgba(245, 241, 234, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(20, 14, 8, 0.08);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--ink-2);
+  text-decoration: none;
+  border-bottom-color: rgba(20, 14, 8, 0.08);
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+}
+
+.card-back-icon {
+  display: inline-flex;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.card-back-label {
+  display: inline;
+}
+
+.card-back:hover {
+  background: rgba(245, 241, 234, 0.95);
+  color: var(--ink);
+  border-bottom-color: rgba(20, 14, 8, 0.08);
+}
+
+[data-theme='dark'] .card-back {
+  background: rgba(21, 17, 13, 0.7);
+  color: var(--ink-2);
+  border-color: rgba(255, 240, 210, 0.12);
+  border-bottom-color: rgba(255, 240, 210, 0.12);
+}
+
+[data-theme='dark'] .card-back:hover {
+  background: rgba(21, 17, 13, 0.92);
+  color: var(--ink);
+  border-bottom-color: rgba(255, 240, 210, 0.12);
+}
+
+.card-screen-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  /* Bottom padding leaves the lower band of the photo (the Saddleback
+     wordmark) clear of typography. The bottom-right action cluster is
+     absolute-positioned and never crosses center. */
+  padding: clamp(72px, 11cqi, 160px) clamp(24px, 6cqi, 80px) clamp(140px, 18cqi, 240px);
+  color: #1a1410;
+}
+
+.card-date {
+  margin: 0;
+  font-size: clamp(18px, 3cqi, 32px);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.card-title {
+  margin: clamp(48px, 9cqi, 96px) 0 0;
+  font-size: clamp(36px, 7.4cqi, 88px);
+  line-height: 1.18;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  max-width: 14ch;
+}
+
+.card-verse {
+  margin: clamp(24px, 4cqi, 48px) auto 0;
+  font-family: 'Noto Serif TC', 'Songti TC', serif;
+  font-size: clamp(15px, 1.8cqi, 22px);
+  line-height: 1.75;
+  color: #2e2620;
+  max-width: 480px;
+  text-wrap: pretty;
+}
+
+.card-ref {
+  margin: clamp(16px, 2.4cqi, 28px) 0 0;
+  font-family: 'Noto Serif TC', 'Songti TC', serif;
+  font-size: clamp(12px, 1.4cqi, 16px);
+  letter-spacing: 0.08em;
+  color: #4a3e30;
+}
+
+/* Floating action cluster — bottom-right of the viewport so it never
+   blocks the Saddleback wordmark anchored at the bottom-center of the
+   photo background. All three actions carry equal visual weight: each
+   is a 48×48 round icon button, evenly distributed in a vertical
+   stack with consistent gap between them. */
+.card-screen-actions {
+  position: absolute;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+/* Hashtag button — collapsed-by-default at every viewport size.
+   The collapsed form is a single-glyph icon so it doesn't compete
+   with the photo. Tapping it expands to the full pill (showing the
+   campaign hashtag + copy hint); a second tap copies to clipboard.
+   Tapping outside the button collapses it again (handled in JS). */
+.card-hashtag {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(245, 241, 234, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(176, 141, 78, 0.4);
+  font-family: inherit;
+  color: var(--gold-deep);
+  border-radius: 999px;
+  transition:
+    border-color 200ms ease,
+    color 200ms ease,
+    background 200ms ease,
+    padding 200ms ease;
+  cursor: pointer;
+}
+
+.card-hashtag--collapsed {
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.card-hashtag--expanded {
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 10px 24px;
+  font-size: clamp(13px, 1.3cqi, 15px);
+  letter-spacing: 0.04em;
+}
+
+.card-hashtag:hover:not(:disabled) {
+  background: rgba(245, 241, 234, 0.95);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+.card-hashtag-state {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--ink-mute);
+}
+
+/* Action buttons (claim / read) — same 48×48 round icon-button
+   treatment as the collapsed hashtag, so all three card-screen
+   actions read as siblings of equal weight. */
+.card-action-btn {
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 241, 234, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(20, 14, 8, 0.08);
+  border-radius: 999px;
+  color: var(--ink-2);
+  border-bottom-color: rgba(20, 14, 8, 0.08);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.card-action-btn:hover {
+  background: rgba(245, 241, 234, 0.95);
+  color: var(--ink);
+  border-color: rgba(20, 14, 8, 0.16);
+  border-bottom-color: rgba(20, 14, 8, 0.16);
+}
+
+[data-theme='dark'] .card-action-btn {
+  background: rgba(21, 17, 13, 0.7);
+  color: var(--ink-2);
+  border-color: rgba(255, 240, 210, 0.12);
+  border-bottom-color: rgba(255, 240, 210, 0.12);
+}
+
+[data-theme='dark'] .card-action-btn:hover {
+  background: rgba(21, 17, 13, 0.92);
+  color: var(--ink);
+}
+
+/* Back button (top-left) keeps its responsive label behavior —
+   labeled pill on wide screens, icon-only square on phones. */
+@media (max-width: 720px) {
+  .card-back {
+    padding: 14px;
+    gap: 0;
+    justify-content: center;
+  }
+
+  .card-back-label {
+    display: none;
+  }
+}
+
+.card-status {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  color: var(--ink-mute);
+  background: rgba(245, 241, 234, 0.55);
+}
+
+.card-error-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 460px;
+  width: calc(100% - 32px);
+  z-index: 4;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Claim dialog — soft-copy / contact form modal triggered from
+   the card screen. The dialog is the one place in the app that
+   adopts a softer, rounded aesthetic (the rest of the UI uses
+   sharp letterpress edges); rules are scoped to `.dialog-card`
+   descendants so the rounded treatment never leaks elsewhere.
+   ───────────────────────────────────────────────────────────── */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 8, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  z-index: 100;
+  animation: dialogFade 220ms ease both;
+}
+
+[data-theme='dark'] .dialog-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+@keyframes dialogFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialog-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100dvh - var(--space-7));
+  overflow-y: auto;
+  padding: var(--space-7) var(--space-5) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  border-radius: 22px;
+  /* Override the sharp .surface defaults with a softer, more diffused
+     shadow so the dialog reads as a floating object rather than a
+     printed card. */
+  box-shadow:
+    0 30px 80px -30px rgba(40, 28, 14, 0.32),
+    0 8px 24px -12px rgba(40, 28, 14, 0.18);
+  animation: dialogRise 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+[data-theme='dark'] .dialog-card {
+  box-shadow:
+    0 30px 80px -30px rgba(0, 0, 0, 0.6),
+    0 8px 24px -12px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes dialogRise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dialog-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+}
+
+.dialog-close:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dialog-header {
+  display: grid;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.dialog-subtitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+
+.dialog-form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Rounded form fields — scoped to the dialog so other forms in the
+   app keep their sharp edges. */
+.dialog-card .field-control {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--paper);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.dialog-card .field-control:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(176, 141, 78, 0.15);
+}
+
+.dialog-card .field-help {
+  padding-left: var(--space-1);
+}
+
+.field-label-soft {
+  color: var(--ink-mute);
+  letter-spacing: 0.22em;
+  font-weight: 400;
+}
+
+.dialog-privacy {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* Pill-shaped CTAs inside the dialog — softer than the app's default
+   sharp btn-solid / btn-outline rectangles. */
+.dialog-card .btn-solid,
+.dialog-card .btn-outline {
+  border-radius: 999px;
+  padding: 14px 32px;
+  letter-spacing: 0.28em;
+}
+
+.dialog-submit {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.dialog-card .banner-error {
+  border-radius: 12px;
+}
+
+.dialog-success {
+  display: grid;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-4) 0 var(--space-2);
+}
+
+.dialog-success-mark {
+  margin: 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: rgba(176, 141, 78, 0.08);
+  color: var(--gold-deep);
+  display: grid;
+  place-items: center;
+}
+
+.dialog-success-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+
+.dialog-success-email {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  color: var(--gold-deep);
+  letter-spacing: 0.04em;
+}
+
+.dialog-done {
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Update toast — soft, dismissible reminder that a newer build
+   has been deployed. Pinned bottom-right so it never displaces
+   content (the reading page is kiosk-style and can't grow a
+   leading banner). Sits below the dialog backdrop (z-index 100).
+   ───────────────────────────────────────────────────────────── */
+
+.update-toast {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  z-index: 50;
+  width: min(360px, calc(100vw - var(--space-7)));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  animation: updateToastIn 320ms ease both;
+}
+
+@keyframes updateToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.update-toast-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+}
+
+.update-toast-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  padding-right: var(--space-5);
+}
+
+.update-toast-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: var(--space-1);
+}
+
+.update-toast-reload {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 10px 22px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  font-family: inherit;
+  transition: background 200ms ease;
+}
+
+.update-toast-reload:hover {
+  background: var(--gold-deep);
+}
+
+.update-toast-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  padding: 10px var(--space-3);
+  font-family: inherit;
+  transition: color 200ms ease;
+}
+
+.update-toast-dismiss:hover {
+  color: var(--ink);
+}
+
+.update-toast-close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--ink-mute);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+}
+
+.update-toast-close:hover {
+  background: var(--paper);
+  color: var(--ink-2);
+}
+
+@media (max-width: 600px) {
+  .update-toast {
+    bottom: var(--space-4);
+    right: var(--space-4);
+    left: var(--space-4);
+    width: auto;
+  }
 }

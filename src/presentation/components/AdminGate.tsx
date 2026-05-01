@@ -14,12 +14,12 @@ export const AdminGate = ({ children }: { readonly children: ReactNode }) => {
   }
   if (!auth.isAdmin) {
     return (
-      <main className="page">
+      <main className="page page-fit">
         <header className="top-bar" />
-        <section style={{ display: 'grid', placeItems: 'center', textAlign: 'center', gap: 18 }}>
+        <section className="section-message">
           <p className="kicker">Restricted</p>
           <h1 className="section-title">沒有管理員權限</h1>
-          <p style={{ color: 'var(--ink-3)', maxWidth: 480, lineHeight: 1.8 }}>
+          <p className="restricted-text">
             此頁面僅供管理員存取。如需編輯每日靈修內容，請聯絡管理員為你的帳戶授權。
           </p>
         </section>

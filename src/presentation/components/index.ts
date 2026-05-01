@@ -5,3 +5,5 @@ export { PageFooter } from './PageFooter';
 export { DateTag } from './DateTag';
 export { DrumPicker } from './DrumPicker';
 export { AdminGate } from './AdminGate';
+export { ClaimDialog } from './ClaimDialog';
+export { UpdateToast } from './UpdateToast';

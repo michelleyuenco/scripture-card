@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import {
   AdminEditorPage,
   AdminPage,
+  CardPage,
   LandingPage,
   NotFoundPage,
   ReadingPage,
@@ -12,6 +13,7 @@ import { AdminGate } from '@presentation/components';
 export const AppRouter = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
+    <Route path="/card/:month/:day" element={<CardPage />} />
     <Route path="/read/:month/:day" element={<ReadingPage />} />
     <Route path="/sign-in" element={<SignInPage />} />
     <Route

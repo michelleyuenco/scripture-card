@@ -1,5 +1,6 @@
 import { AppProvider } from '@presentation/providers';
 import { AppRouter } from '@presentation/routes';
+import { UpdateToast } from '@presentation/components';
 import type { Container } from '@infrastructure/di';
 
 export interface AppProps {
@@ -10,5 +11,6 @@ export interface AppProps {
 export const App = ({ container }: AppProps) => (
   <AppProvider container={container}>
     <AppRouter />
+    <UpdateToast />
   </AppProvider>
 );

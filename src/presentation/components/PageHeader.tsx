@@ -6,9 +6,12 @@ import { ThemeToggle } from './ThemeToggle';
 
 export interface PageHeaderProps {
   readonly leading?: ReactNode;
+  // When provided, replaces the default trailing nav (admin / sign-in / theme).
+  // Pass <ThemeToggle /> alone for a slimmer header on photo / share screens.
+  readonly trailing?: ReactNode;
 }
 
-export const PageHeader = ({ leading }: PageHeaderProps) => {
+export const PageHeader = ({ leading, trailing }: PageHeaderProps) => {
   const auth = useAuth();
   const container = useContainer();
   const location = useLocation();
@@ -21,24 +24,28 @@ export const PageHeader = ({ leading }: PageHeaderProps) => {
     <header className="top-bar">
       {leading ?? <Brand />}
       <nav className="top-bar-tools" aria-label="primary">
-        {auth.isAdmin && (
-          <Link
-            to="/admin"
-            className={`pill${location.pathname.startsWith('/admin') ? ' pill-active' : ''}`}
-          >
-            管理
-          </Link>
+        {trailing ?? (
+          <>
+            {auth.isAdmin && (
+              <Link
+                to="/admin"
+                className={`pill${location.pathname.startsWith('/admin') ? ' pill-active' : ''}`}
+              >
+                管理
+              </Link>
+            )}
+            {auth.user ? (
+              <button type="button" onClick={handleSignOut} className="pill">
+                登出
+              </button>
+            ) : (
+              <Link to="/sign-in" className="pill">
+                登入
+              </Link>
+            )}
+            <ThemeToggle />
+          </>
         )}
-        {auth.user ? (
-          <button type="button" onClick={handleSignOut} className="pill">
-            登出
-          </button>
-        ) : (
-          <Link to="/sign-in" className="pill">
-            登入
-          </Link>
-        )}
-        <ThemeToggle />
       </nav>
     </header>
   );

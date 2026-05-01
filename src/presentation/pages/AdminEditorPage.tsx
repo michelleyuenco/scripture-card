@@ -41,9 +41,9 @@ export const AdminEditorPage = () => {
 
   if (!valid) {
     return (
-      <main className="page">
+      <main className="page page-fit">
         <PageHeader />
-        <section style={{ display: 'grid', placeItems: 'center', textAlign: 'center', gap: 16 }}>
+        <section className="section-message">
           <h1 className="section-title">無效的日期</h1>
           <Link to="/admin" className="btn-solid">
             回到管理頁
@@ -61,7 +61,7 @@ const EditorLoader = ({ month, day }: { readonly month: number; readonly day: nu
 
   if (loading || !entry) {
     return (
-      <main className="page">
+      <main className="page page-fit">
         <PageHeader leading={<BackLink />} />
         <div className="loader">載入中…</div>
       </main>
@@ -78,30 +78,34 @@ interface EditorProps {
   readonly entry: DevotionalDTO;
 }
 
-const initialFormFrom = (entry: DevotionalDTO, month: number, day: number): DevotionalInputDTO => ({
-  month,
-  day,
-  dateLabel: entry.dateLabel,
-  dateEn: entry.dateEn,
-  title: entry.isPlaceholder ? '' : entry.title,
-  verseRef: entry.isPlaceholder ? '' : entry.verseRef,
-  verseTrans: entry.isPlaceholder ? '' : entry.verseTrans,
-  verse: entry.isPlaceholder ? '' : entry.verse,
-  body: entry.isPlaceholder ? [''] : [...entry.body],
-  reflection: entry.isPlaceholder ? '' : entry.reflection,
-});
+const initialFormFrom = (entry: DevotionalDTO, month: number, day: number): DevotionalInputDTO => {
+  const blank = entry.source === 'placeholder';
+  return {
+    month,
+    day,
+    dateLabel: entry.dateLabel,
+    dateEn: entry.dateEn,
+    title: blank ? '' : entry.title,
+    verseRef: blank ? '' : entry.verseRef,
+    verseTrans: blank ? '' : entry.verseTrans,
+    verse: blank ? '' : entry.verse,
+    body: blank ? [''] : [...entry.body],
+    reflection: blank ? '' : entry.reflection,
+  };
+};
 
 const Editor = ({ month, day, entry }: EditorProps) => {
   const navigate = useNavigate();
   const container = useContainer();
   const [form, setForm] = useState<DevotionalInputDTO>(() => initialFormFrom(entry, month, day));
   const [bodyText, setBodyText] = useState<string>(() =>
-    entry.isPlaceholder ? '' : entry.body.join('\n\n'),
+    entry.source === 'placeholder' ? '' : entry.body.join('\n\n'),
   );
   const [save, setSave] = useState<SaveState>({ kind: 'idle' });
   const [deleting, setDeleting] = useState(false);
 
-  const exists = !entry.isPlaceholder;
+  const exists = entry.source === 'firestore';
+  const isBuiltInDraft = entry.source === 'builtin';
 
   const update = <K extends keyof DevotionalInputDTO>(key: K, value: DevotionalInputDTO[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -161,160 +165,144 @@ const Editor = ({ month, day, entry }: EditorProps) => {
   );
 
   return (
-    <main className="page">
+    <main className="page page-fit">
       <PageHeader leading={<BackLink />} />
 
-      <section
-        style={{
-          maxWidth: 'var(--form-max)',
-          width: '100%',
-          margin: '32px auto 0',
-          display: 'grid',
-          gap: 28,
-        }}
-      >
-        <header style={{ display: 'grid', gap: 10 }}>
+      <section className="page-fit-stack section-editor">
+        <header className="editor-header">
           <p className="kicker">Editor</p>
           <h1 className="section-title">編輯每日內容</h1>
-          <p style={{ color: 'var(--ink-3)', margin: 0, letterSpacing: '0.12em' }}>
+          <p className="editor-subtitle">
             {subtitle}
             {exists && (
-              <span className="status-pill status-pill-filled" style={{ marginLeft: 12 }}>
-                已收錄
-              </span>
+              <span className="status-pill status-pill-filled editor-status-pill">已收錄</span>
             )}
+            {isBuiltInDraft && <span className="status-pill editor-status-pill">選錄底稿</span>}
           </p>
-          <hr className="gold-rule" style={{ margin: '4px 0 0' }} />
+          <hr className="gold-rule gold-rule--start editor-rule" />
         </header>
 
-        <form onSubmit={submit} style={{ display: 'grid', gap: 22 }}>
-          <div className="field-grid">
+        <form onSubmit={submit} className="editor-form">
+          <div className="page-fit-scroll editor-fields">
+            <div className="field-grid">
+              <label className="field">
+                <span className="field-label">中文日期</span>
+                <input
+                  className="field-control"
+                  type="text"
+                  value={form.dateLabel}
+                  onChange={(e) => update('dateLabel', e.target.value)}
+                  required
+                  placeholder="例：八月七日"
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">英文日期</span>
+                <input
+                  className="field-control"
+                  type="text"
+                  value={form.dateEn}
+                  onChange={(e) => update('dateEn', e.target.value)}
+                  required
+                  placeholder="例：August 7"
+                />
+              </label>
+            </div>
+
             <label className="field">
-              <span className="field-label">中文日期</span>
+              <span className="field-label">當日標題</span>
               <input
                 className="field-control"
                 type="text"
-                value={form.dateLabel}
-                onChange={(e) => update('dateLabel', e.target.value)}
+                value={form.title}
+                onChange={(e) => update('title', e.target.value)}
                 required
-                placeholder="例：八月七日"
+                placeholder="例：祝福那反對你的人"
               />
             </label>
+
+            <div className="field-grid">
+              <label className="field">
+                <span className="field-label">經文出處</span>
+                <input
+                  className="field-control"
+                  type="text"
+                  value={form.verseRef}
+                  onChange={(e) => update('verseRef', e.target.value)}
+                  required
+                  placeholder="例：使徒行傳 2:44–45"
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">譯本</span>
+                <input
+                  className="field-control"
+                  type="text"
+                  value={form.verseTrans}
+                  onChange={(e) => update('verseTrans', e.target.value)}
+                  placeholder="例：新譯本"
+                />
+              </label>
+            </div>
+
             <label className="field">
-              <span className="field-label">英文日期</span>
-              <input
+              <span className="field-label">經文內容</span>
+              <textarea
                 className="field-control"
-                type="text"
-                value={form.dateEn}
-                onChange={(e) => update('dateEn', e.target.value)}
+                value={form.verse}
+                onChange={(e) => update('verse', e.target.value)}
                 required
-                placeholder="例：August 7"
+                rows={3}
+                placeholder="輸入完整經文內容…"
               />
             </label>
+
+            <label className="field">
+              <span className="field-label">靈修正文</span>
+              <textarea
+                className="field-control"
+                value={bodyText}
+                onChange={(e) => setBodyText(e.target.value)}
+                required
+                rows={12}
+                placeholder="以空白行分隔每一段。"
+              />
+              <span className="field-help">空白行（一個 Enter 鍵兩次）會分段。</span>
+            </label>
+
+            <label className="field">
+              <span className="field-label">反思問題</span>
+              <textarea
+                className="field-control"
+                value={form.reflection}
+                onChange={(e) => update('reflection', e.target.value)}
+                rows={3}
+                placeholder="留給讀者一個反思問題。"
+              />
+            </label>
+
+            {save.kind === 'error' && (
+              <div className="banner banner-error" role="alert">
+                {save.message}
+              </div>
+            )}
+            {save.kind === 'saved' && (
+              <div className="banner banner-info" role="status">
+                已儲存 ✓
+              </div>
+            )}
           </div>
 
-          <label className="field">
-            <span className="field-label">當日標題</span>
-            <input
-              className="field-control"
-              type="text"
-              value={form.title}
-              onChange={(e) => update('title', e.target.value)}
-              required
-              placeholder="例：祝福那反對你的人"
-            />
-          </label>
-
-          <div className="field-grid">
-            <label className="field">
-              <span className="field-label">經文出處</span>
-              <input
-                className="field-control"
-                type="text"
-                value={form.verseRef}
-                onChange={(e) => update('verseRef', e.target.value)}
-                required
-                placeholder="例：使徒行傳 2:44–45"
-              />
-            </label>
-            <label className="field">
-              <span className="field-label">譯本</span>
-              <input
-                className="field-control"
-                type="text"
-                value={form.verseTrans}
-                onChange={(e) => update('verseTrans', e.target.value)}
-                placeholder="例：新譯本"
-              />
-            </label>
-          </div>
-
-          <label className="field">
-            <span className="field-label">經文內容</span>
-            <textarea
-              className="field-control"
-              value={form.verse}
-              onChange={(e) => update('verse', e.target.value)}
-              required
-              rows={3}
-              placeholder="輸入完整經文內容…"
-            />
-          </label>
-
-          <label className="field">
-            <span className="field-label">靈修正文</span>
-            <textarea
-              className="field-control"
-              value={bodyText}
-              onChange={(e) => setBodyText(e.target.value)}
-              required
-              rows={12}
-              placeholder="以空白行分隔每一段。"
-            />
-            <span className="field-help">空白行（一個 Enter 鍵兩次）會分段。</span>
-          </label>
-
-          <label className="field">
-            <span className="field-label">反思問題</span>
-            <textarea
-              className="field-control"
-              value={form.reflection}
-              onChange={(e) => update('reflection', e.target.value)}
-              rows={3}
-              placeholder="留給讀者一個反思問題。"
-            />
-          </label>
-
-          {save.kind === 'error' && (
-            <div className="banner banner-error" role="alert">
-              {save.message}
-            </div>
-          )}
-          {save.kind === 'saved' && (
-            <div className="banner banner-info" role="status">
-              已儲存 ✓
-            </div>
-          )}
-
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              paddingTop: 8,
-            }}
-          >
+          <div className="page-fit-actions page-fit-actions--between">
             <button
               type="button"
               onClick={remove}
-              className="btn-ghost"
+              className="btn-ghost editor-action-danger"
               disabled={!exists || deleting}
-              style={{ color: '#a04030', letterSpacing: '0.18em' }}
             >
               {deleting ? '刪除中…' : '刪除此日'}
             </button>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="editor-action-end">
               <Link to="/admin" className="btn-outline">
                 取消
               </Link>

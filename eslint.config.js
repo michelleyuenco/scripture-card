@@ -78,6 +78,21 @@ export default defineConfig([
       ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       eqeqeq: ['error', 'always'],
+      // Forbid `style={{ ... }}` on DOM elements (lowercase JSX tags).
+      // Use a class from src/presentation/styles/global.css with tokens
+      // (var(--space-*), var(--ink), etc.) instead. React components and
+      // motion.* elements (uppercase tags) are unaffected.
+      // To override for genuinely dynamic dimensions, add an inline
+      // `// eslint-disable-next-line no-restricted-syntax -- reason`.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "JSXOpeningElement[name.type='JSXIdentifier'][name.name=/^[a-z]/] > JSXAttribute[name.name='style']",
+          message:
+            'Avoid inline `style` on DOM elements. Add a semantic class to global.css and use design tokens (var(--space-*), var(--ink), etc.).',
+        },
+      ],
     },
   },
   layerRule('domain'),

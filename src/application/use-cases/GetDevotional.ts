@@ -3,6 +3,7 @@ import { err, isErr, ok } from '@shared/result';
 import type { DomainError } from '@domain/errors';
 import { DayKey } from '@domain/value-objects';
 import type { DevotionalRepository } from '@domain/repositories';
+import type { BuiltInDevotionalSource } from '@application/ports';
 import type { DevotionalDTO } from '@application/dto';
 import { buildPlaceholderDTO, toDevotionalDTO } from '@application/mappers/devotionalMapper';
 import type { UseCase } from './UseCase';
@@ -14,9 +15,11 @@ export interface GetDevotionalInput {
 
 export class GetDevotional implements UseCase<GetDevotionalInput, DevotionalDTO> {
   private readonly repo: DevotionalRepository;
+  private readonly builtIn: BuiltInDevotionalSource;
 
-  constructor(repo: DevotionalRepository) {
+  constructor(repo: DevotionalRepository, builtIn: BuiltInDevotionalSource) {
     this.repo = repo;
+    this.builtIn = builtIn;
   }
 
   async execute(input: GetDevotionalInput): Promise<Result<DevotionalDTO, DomainError>> {
@@ -25,10 +28,15 @@ export class GetDevotional implements UseCase<GetDevotionalInput, DevotionalDTO>
 
     const found = await this.repo.findByKey(keyResult.value);
     if (isErr(found)) return err(found.error);
-
-    if (found.value === null) {
-      return ok(buildPlaceholderDTO(input.month, input.day));
+    if (found.value !== null) {
+      return ok(toDevotionalDTO(found.value, 'firestore'));
     }
-    return ok(toDevotionalDTO(found.value));
+
+    const builtIn = this.builtIn.findByKey(keyResult.value);
+    if (builtIn !== null) {
+      return ok(toDevotionalDTO(builtIn, 'builtin'));
+    }
+
+    return ok(buildPlaceholderDTO(input.month, input.day));
   }
 }

@@ -1,0 +1,163 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, BookOpen, Hash, Mail } from 'lucide-react';
+import { ClaimDialog, PageFooter, PageHeader } from '@presentation/components';
+import { useDevotional } from '@presentation/hooks';
+import { formatChineseDate } from '@presentation/utils';
+import cardBackground from '@presentation/assets/card-background.png';
+
+// Placeholder campaign hashtag — swap when the team picks the final one.
+const SHARE_HASHTAG = '#AWordForYourDay';
+
+const parseDate = (rawMonth: string | undefined, rawDay: string | undefined) => {
+  const m = Number(rawMonth);
+  const d = Number(rawDay);
+  if (!Number.isInteger(m) || m < 1 || m > 12) return null;
+  if (!Number.isInteger(d) || d < 1 || d > 31) return null;
+  return { month: m, day: d };
+};
+
+export const CardPage = () => {
+  const { month: rawMonth, day: rawDay } = useParams<{ month: string; day: string }>();
+  const parsed = useMemo(() => parseDate(rawMonth, rawDay), [rawMonth, rawDay]);
+
+  if (!parsed) {
+    return <InvalidDate />;
+  }
+
+  return <CardContent month={parsed.month} day={parsed.day} />;
+};
+
+const InvalidDate = () => (
+  <main className="page">
+    <PageHeader />
+    <section className="section-message">
+      <p className="kicker">Not Found</p>
+      <h1 className="section-title">這不是一個有效的日期</h1>
+      <Link to="/" className="btn-solid">
+        回到首頁 →
+      </Link>
+    </section>
+    <PageFooter />
+  </main>
+);
+
+const CardContent = ({ month, day }: { month: number; day: number }) => {
+  const { entry, loading, error } = useDevotional(month, day);
+  const dateLabel = formatChineseDate(month, day);
+  const [copied, setCopied] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
+  const [hashtagExpanded, setHashtagExpanded] = useState(false);
+  const hashtagRef = useRef<HTMLButtonElement | null>(null);
+
+  // Close the expanded hashtag when the user taps anywhere outside it.
+  useEffect(() => {
+    if (!hashtagExpanded) return;
+    const handleOutside = (event: Event) => {
+      const target = event.target as Node | null;
+      if (target && hashtagRef.current && !hashtagRef.current.contains(target)) {
+        setHashtagExpanded(false);
+        setCopied(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('touchstart', handleOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('touchstart', handleOutside);
+    };
+  }, [hashtagExpanded]);
+
+  const handleHashtagClick = () => {
+    if (!hashtagExpanded) {
+      setHashtagExpanded(true);
+      return;
+    }
+    void navigator.clipboard.writeText(SHARE_HASHTAG).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <main className="card-screen" aria-label={`${dateLabel}靈修卡片`}>
+      <img className="card-screen-bg" src={cardBackground} alt="" aria-hidden />
+
+      <Link to="/" className="card-back" aria-label="返回選擇日期">
+        <span className="card-back-icon" aria-hidden>
+          <ArrowLeft size={18} strokeWidth={1.75} />
+        </span>
+        <span className="card-back-label">另選日期</span>
+      </Link>
+
+      <section className="card-screen-content">
+        <p className="card-date brush-zh">{dateLabel}</p>
+
+        {entry && !loading && (
+          <>
+            <h1 className="card-title brush-zh">{entry.title}</h1>
+            <p className="card-verse">「{entry.verse}」</p>
+            <p className="card-ref">
+              {entry.verseRef}
+              {entry.verseTrans ? `（${entry.verseTrans}）` : ''}
+            </p>
+          </>
+        )}
+      </section>
+
+      {entry && !loading && (
+        <footer className="card-screen-actions">
+          <button
+            ref={hashtagRef}
+            type="button"
+            onClick={handleHashtagClick}
+            className={`card-hashtag${hashtagExpanded ? ' card-hashtag--expanded' : ' card-hashtag--collapsed'}`}
+            aria-label={hashtagExpanded ? `複製標籤 ${SHARE_HASHTAG}` : '顯示分享標籤'}
+            aria-expanded={hashtagExpanded}
+          >
+            {hashtagExpanded ? (
+              <>
+                <span>{SHARE_HASHTAG}</span>
+                <span className="card-hashtag-state">{copied ? '已複製 ✓' : '點擊複製'}</span>
+              </>
+            ) : (
+              <Hash size={20} strokeWidth={1.75} aria-hidden />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClaimOpen(true)}
+            className="card-action-btn"
+            aria-label="領取電子卡"
+          >
+            <Mail size={18} strokeWidth={1.75} aria-hidden />
+          </button>
+          <Link
+            to={`/read/${String(month)}/${String(day)}`}
+            className="card-action-btn"
+            aria-label="翻開內文"
+          >
+            <BookOpen size={18} strokeWidth={1.75} aria-hidden />
+          </Link>
+        </footer>
+      )}
+
+      {loading && <div className="card-status">翻頁中…</div>}
+
+      {error && !loading && (
+        <div className="banner banner-error card-error-banner" role="alert">
+          載入失敗：{error}
+        </div>
+      )}
+
+      <ClaimDialog
+        open={claimOpen}
+        month={month}
+        day={day}
+        dateLabel={dateLabel}
+        onClose={() => setClaimOpen(false)}
+      />
+    </main>
+  );
+};
