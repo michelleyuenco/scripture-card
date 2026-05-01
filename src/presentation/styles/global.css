@@ -80,9 +80,19 @@ body,
 
 /* iOS Safari sometimes ignores overflow-x on body in isolation; pinning
    it on html as well prevents a stray pixel of overflow from rendering
-   the page slightly shifted with extra space on one side. */
+   the page slightly shifted with extra space on one side.
+   scrollbar-width: none hides the page-level vertical scrollbar so it
+   takes zero layout width — keeps .page's left/right padding visually
+   symmetric across all platforms. The page still scrolls via wheel /
+   touchpad / keyboard. Inner scroll containers (.page-fit-scroll, etc.)
+   keep their styled scrollbar via the rules below. */
 html {
   overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -1115,6 +1125,7 @@ textarea.field-control {
   color: var(--ink-2);
   margin: 0 auto;
   max-width: 560px;
+  text-wrap: pretty;
 }
 
 .verse-ref {
