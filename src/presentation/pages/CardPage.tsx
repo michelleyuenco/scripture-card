@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Hash, Mail } from 'lucide-react';
+import { ArrowLeft, BookOpen, Check, Hash, Mail } from 'lucide-react';
 import { ClaimDialog, PageFooter, PageHeader } from '@presentation/components';
 import { useDevotional } from '@presentation/hooks';
 import { formatChineseDate } from '@presentation/utils';
@@ -47,32 +47,8 @@ const CardContent = ({ month, day }: { month: number; day: number }) => {
   const dateLabel = formatChineseDate(month, day);
   const [copied, setCopied] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
-  const [hashtagExpanded, setHashtagExpanded] = useState(false);
-  const hashtagRef = useRef<HTMLButtonElement | null>(null);
 
-  // Close the expanded hashtag when the user taps anywhere outside it.
-  useEffect(() => {
-    if (!hashtagExpanded) return;
-    const handleOutside = (event: Event) => {
-      const target = event.target as Node | null;
-      if (target && hashtagRef.current && !hashtagRef.current.contains(target)) {
-        setHashtagExpanded(false);
-        setCopied(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutside);
-    document.addEventListener('touchstart', handleOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleOutside);
-      document.removeEventListener('touchstart', handleOutside);
-    };
-  }, [hashtagExpanded]);
-
-  const handleHashtagClick = () => {
-    if (!hashtagExpanded) {
-      setHashtagExpanded(true);
-      return;
-    }
+  const copyHashtag = () => {
     void navigator.clipboard.writeText(SHARE_HASHTAG).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -108,21 +84,12 @@ const CardContent = ({ month, day }: { month: number; day: number }) => {
       {entry && !loading && (
         <footer className="card-screen-actions">
           <button
-            ref={hashtagRef}
             type="button"
-            onClick={handleHashtagClick}
-            className={`card-hashtag${hashtagExpanded ? ' card-hashtag--expanded' : ' card-hashtag--collapsed'}`}
-            aria-label={hashtagExpanded ? `複製標籤 ${SHARE_HASHTAG}` : '顯示分享標籤'}
-            aria-expanded={hashtagExpanded}
+            onClick={copyHashtag}
+            className="card-action-btn"
+            aria-label={`複製標籤 ${SHARE_HASHTAG}`}
           >
-            {hashtagExpanded ? (
-              <>
-                <span>{SHARE_HASHTAG}</span>
-                <span className="card-hashtag-state">{copied ? '已複製 ✓' : '點擊複製'}</span>
-              </>
-            ) : (
-              <Hash size={20} strokeWidth={1.75} aria-hidden />
-            )}
+            <Hash size={18} strokeWidth={1.75} aria-hidden />
           </button>
 
           <button
@@ -141,6 +108,13 @@ const CardContent = ({ month, day }: { month: number; day: number }) => {
             <BookOpen size={18} strokeWidth={1.75} aria-hidden />
           </Link>
         </footer>
+      )}
+
+      {copied && (
+        <div className="card-toast" role="status" aria-live="polite">
+          <Check size={16} strokeWidth={2.25} aria-hidden />
+          <span>已複製 {SHARE_HASHTAG}</span>
+        </div>
       )}
 
       {loading && <div className="card-status">翻頁中…</div>}
