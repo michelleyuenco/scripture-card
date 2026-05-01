@@ -1978,7 +1978,9 @@ textarea.field-control {
 .update-toast {
   position: fixed;
   bottom: var(--space-5);
-  right: var(--space-5);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   z-index: 50;
   width: min(360px, calc(100vw - var(--space-7)));
   display: flex;
@@ -2029,6 +2031,7 @@ textarea.field-control {
   font-size: 12px;
   letter-spacing: 0.22em;
   font-family: inherit;
+  border-radius: var(--radius-pill);
   transition: background 200ms ease;
 }
 
@@ -2044,6 +2047,7 @@ textarea.field-control {
   letter-spacing: 0.22em;
   padding: 10px var(--space-3);
   font-family: inherit;
+  border-radius: var(--radius-pill);
   transition: color 200ms ease;
 }
 
@@ -2076,8 +2080,9 @@ textarea.field-control {
 @media (max-width: 600px) {
   .update-toast {
     bottom: var(--space-4);
-    right: var(--space-4);
     left: var(--space-4);
+    right: var(--space-4);
+    margin: 0;
     width: auto;
   }
 }
