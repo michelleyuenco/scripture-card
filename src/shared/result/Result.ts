@@ -20,3 +20,23 @@ export const err = <E>(error: E): Err<E> => ({ ok: false, error });
 export const isOk = <T, E>(result: Result<T, E>): result is Ok<T> => result.ok;
 
 export const isErr = <T, E>(result: Result<T, E>): result is Err<E> => !result.ok;
+
+// Transform the Ok value, leaving Err untouched.
+export const map = <T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> =>
+  result.ok ? ok(fn(result.value)) : result;
+
+// Transform the Err value, leaving Ok untouched.
+export const mapErr = <T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> =>
+  result.ok ? result : err(fn(result.error));
+
+// Chain a Result-returning function. Short-circuits on the first Err.
+export const andThen = <T, U, E>(
+  result: Result<T, E>,
+  fn: (value: T) => Result<U, E>,
+): Result<U, E> => (result.ok ? fn(result.value) : result);
+
+// Async equivalent of `andThen` — useful when the next step in a use case is itself async.
+export const andThenAsync = async <T, U, E>(
+  result: Result<T, E>,
+  fn: (value: T) => Promise<Result<U, E>>,
+): Promise<Result<U, E>> => (result.ok ? fn(result.value) : result);

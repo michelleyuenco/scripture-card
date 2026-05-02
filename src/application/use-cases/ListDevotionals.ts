@@ -1,7 +1,7 @@
 import type { Result } from '@shared/result';
-import { err, isErr, ok } from '@shared/result';
+import { map } from '@shared/result';
 import type { DomainError } from '@domain/errors';
-import type { DevotionalRepository } from '@domain/repositories';
+import type { DevotionalRepository, DevotionalSummary } from '@domain/repositories';
 import type { DevotionalSummaryDTO } from '@application/dto';
 import { toSummaryDTO } from '@application/mappers/devotionalMapper';
 import type { UseCase } from './UseCase';
@@ -15,7 +15,6 @@ export class ListDevotionals implements UseCase<void, DevotionalSummaryDTO[]> {
 
   async execute(): Promise<Result<DevotionalSummaryDTO[], DomainError>> {
     const result = await this.repo.list();
-    if (isErr(result)) return err(result.error);
-    return ok(result.value.map(toSummaryDTO));
+    return map(result, (items: DevotionalSummary[]) => items.map(toSummaryDTO));
   }
 }

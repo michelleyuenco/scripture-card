@@ -1,13 +1,10 @@
 import type { Branded } from '@shared/types';
 import type { Result } from '@shared/result';
 import { err, ok } from '@shared/result';
+import { MAX_DAYS_PER_MONTH, pad2 } from '@shared/date';
 import { ValidationError } from '@domain/errors';
 
 export type DayKey = Branded<string, 'DayKey'>;
-
-const MAX_DAYS_PER_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
 
 export const DayKey = {
   create(month: number, day: number): Result<DayKey, ValidationError> {
@@ -18,7 +15,7 @@ export const DayKey = {
     if (!Number.isInteger(day) || day < 1 || day > max) {
       return err(new ValidationError(`Invalid day for month ${String(month)}: ${String(day)}`));
     }
-    return ok(`${pad(month)}-${pad(day)}` as DayKey);
+    return ok(`${pad2(month)}-${pad2(day)}` as DayKey);
   },
 
   parse(raw: string): Result<DayKey, ValidationError> {
@@ -42,7 +39,7 @@ export const DayKey = {
     for (let m = 1; m <= 12; m += 1) {
       const max = MAX_DAYS_PER_MONTH[m - 1] ?? 31;
       for (let d = 1; d <= max; d += 1) {
-        keys.push(`${pad(m)}-${pad(d)}` as DayKey);
+        keys.push(`${pad2(m)}-${pad2(d)}` as DayKey);
       }
     }
     return keys;

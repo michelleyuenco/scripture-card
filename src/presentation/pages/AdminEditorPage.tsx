@@ -1,24 +1,10 @@
 import { type FormEvent, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { formatChineseMonth, formatEnglishMonth } from '@shared/date';
 import type { DevotionalDTO, DevotionalInputDTO } from '@application/dto';
 import { PageFooter, PageHeader } from '@presentation/components';
-import { useContainer, useDevotional } from '@presentation/hooks';
-
-const MONTH_CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
-const MONTH_EN = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
+import { useContainer, useDayParams, useDevotional } from '@presentation/hooks';
+import { dispatchUseCase } from '@presentation/utils';
 
 type SaveState =
   | { readonly kind: 'idle' }
@@ -27,19 +13,8 @@ type SaveState =
   | { readonly kind: 'error'; readonly message: string };
 
 export const AdminEditorPage = () => {
-  const { month: rawMonth, day: rawDay } = useParams<{ month: string; day: string }>();
-  const month = Number(rawMonth);
-  const day = Number(rawDay);
-
-  const valid =
-    Number.isInteger(month) &&
-    Number.isInteger(day) &&
-    month >= 1 &&
-    month <= 12 &&
-    day >= 1 &&
-    day <= 31;
-
-  if (!valid) {
+  const params = useDayParams();
+  if (!params) {
     return (
       <main className="page page-fit">
         <PageHeader />
@@ -52,8 +27,7 @@ export const AdminEditorPage = () => {
       </main>
     );
   }
-
-  return <EditorLoader month={month} day={day} />;
+  return <EditorLoader month={params.month} day={params.day} />;
 };
 
 const EditorLoader = ({ month, day }: { readonly month: number; readonly day: number }) => {
@@ -122,45 +96,29 @@ const Editor = ({ month, day, entry }: EditorProps) => {
       return;
     }
     setSave({ kind: 'saving' });
-    container.useCases.saveDevotional.execute({ ...form, body }).then(
-      (result) => {
-        if (result.ok) {
-          setSave({ kind: 'saved' });
-          setTimeout(() => setSave({ kind: 'idle' }), 2400);
-        } else {
-          setSave({ kind: 'error', message: result.error.message });
-        }
-      },
-      (error: unknown) => {
-        const message = error instanceof Error ? error.message : '未知錯誤';
-        setSave({ kind: 'error', message });
-      },
-    );
+    dispatchUseCase(container.useCases.saveDevotional.execute({ ...form, body }), (r) => {
+      if (r.ok) {
+        setSave({ kind: 'saved' });
+        setTimeout(() => setSave({ kind: 'idle' }), 2400);
+      } else {
+        setSave({ kind: 'error', message: r.error });
+      }
+    });
   };
 
   const remove = () => {
     if (deleting) return;
-    if (!window.confirm(`確定要刪除 ${MONTH_CN[month - 1] ?? month}月${day}日 的內容嗎？`)) return;
+    if (!window.confirm(`確定要刪除 ${formatChineseMonth(month)}月${day}日 的內容嗎？`)) return;
     setDeleting(true);
-    container.useCases.deleteDevotional.execute({ month, day }).then(
-      (result) => {
-        setDeleting(false);
-        if (result.ok) {
-          void navigate('/admin');
-        } else {
-          setSave({ kind: 'error', message: result.error.message });
-        }
-      },
-      (error: unknown) => {
-        setDeleting(false);
-        const message = error instanceof Error ? error.message : '未知錯誤';
-        setSave({ kind: 'error', message });
-      },
-    );
+    dispatchUseCase(container.useCases.deleteDevotional.execute({ month, day }), (r) => {
+      setDeleting(false);
+      if (r.ok) void navigate('/admin');
+      else setSave({ kind: 'error', message: r.error });
+    });
   };
 
   const subtitle = useMemo(
-    () => `${MONTH_CN[month - 1] ?? month}月${day}日 · ${MONTH_EN[month - 1] ?? ''} ${day}`,
+    () => `${formatChineseMonth(month)}月${day}日 · ${formatEnglishMonth(month)} ${day}`,
     [month, day],
   );
 

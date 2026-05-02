@@ -1,9 +1,18 @@
 import type { Result } from '@shared/result';
-import { err, isErr, ok } from '@shared/result';
+import { err, isErr, map } from '@shared/result';
 import type { DomainError } from '@domain/errors';
-import { ClaimRequest } from '@domain/entities';
+import { ClaimRequest, type ClaimRequestProps } from '@domain/entities';
 import type { ClaimRepository } from '@domain/repositories';
 import type { ClaimRequestDTO, ClaimRequestInputDTO } from '@application/dto';
+
+const toClaimRequestDTO = (claim: ClaimRequestProps): ClaimRequestDTO => ({
+  name: claim.name,
+  email: claim.email,
+  phone: claim.phone,
+  month: claim.month,
+  day: claim.day,
+  createdAt: claim.createdAt.toISOString(),
+});
 
 export class SubmitClaim {
   private readonly repo: ClaimRepository;
@@ -23,15 +32,6 @@ export class SubmitClaim {
     if (isErr(entity)) return err(entity.error);
 
     const saved = await this.repo.create(entity.value);
-    if (isErr(saved)) return err(saved.error);
-
-    return ok({
-      name: saved.value.name,
-      email: saved.value.email,
-      phone: saved.value.phone,
-      month: saved.value.month,
-      day: saved.value.day,
-      createdAt: saved.value.createdAt.toISOString(),
-    });
+    return map(saved, toClaimRequestDTO);
   }
 }

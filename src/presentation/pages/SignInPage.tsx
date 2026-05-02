@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { PageFooter, PageHeader, ThemeToggle } from '@presentation/components';
 import { useAuth, useContainer } from '@presentation/hooks';
+import { dispatchUseCase } from '@presentation/utils';
 
 type Mode = 'sign-in' | 'sign-up';
 
@@ -38,36 +39,20 @@ export const SignInPage = () => {
     setBusy(true);
     const useCase =
       mode === 'sign-in' ? container.useCases.signInWithEmail : container.useCases.signUpWithEmail;
-    useCase.execute({ email: email.trim(), password }).then(
-      (result) => {
-        setBusy(false);
-        if (!result.ok) {
-          setError(result.error.message);
-        }
-      },
-      (e: unknown) => {
-        setBusy(false);
-        setError(e instanceof Error ? e.message : '未知錯誤');
-      },
-    );
+    dispatchUseCase(useCase.execute({ email: email.trim(), password }), (r) => {
+      setBusy(false);
+      if (!r.ok) setError(r.error);
+    });
   };
 
   const signInWithGoogle = () => {
     if (busy) return;
     setError(null);
     setBusy(true);
-    container.useCases.signInWithGoogle.execute().then(
-      (result) => {
-        setBusy(false);
-        if (!result.ok) {
-          setError(result.error.message);
-        }
-      },
-      (e: unknown) => {
-        setBusy(false);
-        setError(e instanceof Error ? e.message : '未知錯誤');
-      },
-    );
+    dispatchUseCase(container.useCases.signInWithGoogle.execute(), (r) => {
+      setBusy(false);
+      if (!r.ok) setError(r.error);
+    });
   };
 
   return (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { dispatchUseCase } from '@presentation/utils';
 import { useContainer } from './useContainer';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -30,17 +31,11 @@ export const useUpdateAvailable = (): UpdateAvailableState => {
 
     const runCheck = () => {
       lastCheckedRef.current = Date.now();
-      container.useCases.checkForUpdate.execute().then(
-        (result) => {
-          if (cancelled) return;
-          if (result.ok && result.value) {
-            setHasUpdate(true);
-          }
-        },
-        () => {
-          // Silently ignore — usually offline or dev mode (no version.json).
-        },
-      );
+      // Failures are silently ignored — usually offline or dev mode (no version.json).
+      dispatchUseCase(container.useCases.checkForUpdate.execute(), (r) => {
+        if (cancelled) return;
+        if (r.ok && r.value) setHasUpdate(true);
+      });
     };
 
     runCheck();

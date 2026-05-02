@@ -1,7 +1,8 @@
 import type { DevotionalProps } from '@domain/entities';
 import type { DevotionalSummary } from '@domain/repositories';
-import type { DevotionalDTO, DevotionalSource, DevotionalSummaryDTO } from '@application/dto';
 import { DayKey } from '@domain/value-objects';
+import { formatChineseDate, formatEnglishDate, pad2 } from '@shared/date';
+import type { DevotionalDTO, DevotionalSource, DevotionalSummaryDTO } from '@application/dto';
 
 export const toDevotionalDTO = (
   entry: DevotionalProps,
@@ -31,41 +32,17 @@ export const toSummaryDTO = (summary: DevotionalSummary): DevotionalSummaryDTO =
   updatedAt: summary.updatedAt.toISOString(),
 });
 
-const MONTH_CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
-const MONTH_EN = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-const DAY_CN = (n: number): string => {
-  const ch = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-  if (n <= 10) return ch[n] ?? String(n);
-  if (n < 20) return `十${ch[n - 10] ?? ''}`;
-  if (n === 20) return '二十';
-  if (n < 30) return `二十${ch[n - 20] ?? ''}`;
-  if (n === 30) return '三十';
-  return `三十${ch[n - 30] ?? ''}`;
-};
-
+// Stable placeholder shown for days with no Firestore or built-in entry.
+// Coerces an out-of-range month to a valid one so the result type can stay
+// narrow; the caller should usually have validated via DayKey first.
 export const buildPlaceholderDTO = (month: number, day: number): DevotionalDTO => {
   const m = Math.max(1, Math.min(12, month));
-  const monthLabel = MONTH_CN[m - 1] ?? String(m);
-  const monthEn = MONTH_EN[m - 1] ?? String(m);
   return {
-    key: `${m < 10 ? '0' : ''}${m}-${day < 10 ? '0' : ''}${day}`,
+    key: `${pad2(m)}-${pad2(day)}`,
     month: m,
     day,
-    dateLabel: `${monthLabel}月${DAY_CN(day)}日`,
-    dateEn: `${monthEn} ${day}`,
+    dateLabel: formatChineseDate(m, day),
+    dateEn: formatEnglishDate(m, day),
     title: '為這一日感恩',
     verseRef: '詩篇 118:24',
     verseTrans: '新譯本',

@@ -1,28 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp, Check, Compass, Copy } from 'lucide-react';
 import { DateTag, PageFooter, PageHeader } from '@presentation/components';
-import { useDevotional } from '@presentation/hooks';
-
-const parseDate = (rawMonth: string | undefined, rawDay: string | undefined) => {
-  const m = Number(rawMonth);
-  const d = Number(rawDay);
-  if (!Number.isInteger(m) || m < 1 || m > 12) return null;
-  if (!Number.isInteger(d) || d < 1 || d > 31) return null;
-  return { month: m, day: d };
-};
+import { useDayParams, useDevotional } from '@presentation/hooks';
 
 export const ReadingPage = () => {
-  const { month: rawMonth, day: rawDay } = useParams<{ month: string; day: string }>();
-  const parsed = useMemo(() => parseDate(rawMonth, rawDay), [rawMonth, rawDay]);
-
-  if (!parsed) {
-    return <InvalidDate />;
-  }
-
-  return <ReadingContent month={parsed.month} day={parsed.day} />;
+  const params = useDayParams();
+  if (!params) return <InvalidDate />;
+  return <ReadingContent month={params.month} day={params.day} />;
 };
 
 const InvalidDate = () => (

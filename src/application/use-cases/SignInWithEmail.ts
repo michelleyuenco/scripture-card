@@ -1,5 +1,5 @@
 import type { Result } from '@shared/result';
-import { err, isErr, ok } from '@shared/result';
+import { map } from '@shared/result';
 import type { DomainError } from '@domain/errors';
 import type { AuthService } from '@application/ports';
 import type { AuthUserDTO, EmailCredentialsDTO } from '@application/dto';
@@ -15,8 +15,7 @@ export class SignInWithEmail implements UseCase<EmailCredentialsDTO, AuthUserDTO
 
   async execute(input: EmailCredentialsDTO): Promise<Result<AuthUserDTO, DomainError>> {
     const result = await this.auth.signInWithEmail(input);
-    if (isErr(result)) return err(result.error);
-    return ok(toAuthUserDTO(result.value));
+    return map(result, toAuthUserDTO);
   }
 }
 
@@ -29,7 +28,6 @@ export class SignUpWithEmail implements UseCase<EmailCredentialsDTO, AuthUserDTO
 
   async execute(input: EmailCredentialsDTO): Promise<Result<AuthUserDTO, DomainError>> {
     const result = await this.auth.signUpWithEmail(input);
-    if (isErr(result)) return err(result.error);
-    return ok(toAuthUserDTO(result.value));
+    return map(result, toAuthUserDTO);
   }
 }

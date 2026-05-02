@@ -1,5 +1,5 @@
 import type { Result } from '@shared/result';
-import { err, isErr, ok } from '@shared/result';
+import { err, isErr, map } from '@shared/result';
 import type { DomainError } from '@domain/errors';
 import { Devotional } from '@domain/entities';
 import { DayKey } from '@domain/value-objects';
@@ -33,8 +33,6 @@ export class SaveDevotional implements UseCase<DevotionalInputDTO, DevotionalDTO
     if (isErr(entity)) return err(entity.error);
 
     const saved = await this.repo.save(entity.value);
-    if (isErr(saved)) return err(saved.error);
-
-    return ok(toDevotionalDTO(saved.value));
+    return map(saved, toDevotionalDTO);
   }
 }

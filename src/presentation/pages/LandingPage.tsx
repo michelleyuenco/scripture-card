@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MONTHS, daysInMonth, formatChineseMonth } from '@shared/date';
 import { DrumPicker, PageFooter, PageHeader } from '@presentation/components';
-
-const MONTH_LABELS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const daysInMonth = (m: number) => new Date(2025, m, 0).getDate();
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -36,7 +33,7 @@ export const LandingPage = () => {
               value={month}
               onChange={setMonth}
               width={92}
-              formatter={(m) => `${MONTH_LABELS[m - 1] ?? String(m)}月`}
+              formatter={(m) => `${formatChineseMonth(m)}月`}
             />
             <span className="landing-pickers-sep">·</span>
             <DrumPicker

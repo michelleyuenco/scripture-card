@@ -1,5 +1,5 @@
 import type { Result } from '@shared/result';
-import { err, isErr } from '@shared/result';
+import { andThenAsync } from '@shared/result';
 import type { DomainError } from '@domain/errors';
 import { DayKey } from '@domain/value-objects';
 import type { DevotionalRepository } from '@domain/repositories';
@@ -18,8 +18,6 @@ export class DeleteDevotional implements UseCase<DeleteDevotionalInput, void> {
   }
 
   async execute(input: DeleteDevotionalInput): Promise<Result<void, DomainError>> {
-    const keyResult = DayKey.create(input.month, input.day);
-    if (isErr(keyResult)) return err(keyResult.error);
-    return this.repo.delete(keyResult.value);
+    return andThenAsync(DayKey.create(input.month, input.day), (key) => this.repo.delete(key));
   }
 }

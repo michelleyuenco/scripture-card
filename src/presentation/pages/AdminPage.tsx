@@ -1,11 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MONTHS, TOTAL_DAYS, daysInMonth, formatChineseMonth, pad2 } from '@shared/date';
 import { PageFooter, PageHeader } from '@presentation/components';
 import { useDevotionalList } from '@presentation/hooks';
-
-const MONTH_LABELS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const daysInMonth = (m: number) => new Date(2025, m, 0).getDate();
 
 export const AdminPage = () => {
   const { items, loading, error, refresh } = useDevotionalList();
@@ -29,7 +26,9 @@ export const AdminPage = () => {
           <p className="kicker">Admin</p>
           <div className="admin-title-row">
             <h1 className="section-title">每日靈修內容</h1>
-            <span className="admin-counter">已完成 {filledCount} / 366</span>
+            <span className="admin-counter">
+              已完成 {filledCount} / {TOTAL_DAYS}
+            </span>
           </div>
           <hr className="gold-rule gold-rule--start" />
         </header>
@@ -42,7 +41,7 @@ export const AdminPage = () => {
               className={`pill${m === month ? ' pill-active' : ''}`}
               onClick={() => setMonth(m)}
             >
-              {MONTH_LABELS[m - 1] ?? String(m)}月
+              {formatChineseMonth(m)}月
             </button>
           ))}
           <button
@@ -67,13 +66,13 @@ export const AdminPage = () => {
           <div className="page-fit-scroll">
             <div className="day-grid">
               {days.map((d) => {
-                const key = `${month < 10 ? '0' : ''}${month}-${d < 10 ? '0' : ''}${d}`;
+                const key = `${pad2(month)}-${pad2(d)}`;
                 const existing = filledByKey.get(key);
                 return (
                   <Link key={key} to={`/admin/${month}/${d}`} className="day-card">
                     <div className="day-card-row">
                       <span className="day-card-key">
-                        {MONTH_LABELS[month - 1] ?? month} · {d}
+                        {formatChineseMonth(month)} · {d}
                       </span>
                       <span className={`status-pill${existing ? ' status-pill-filled' : ''}`}>
                         {existing ? '已收錄' : '空白'}

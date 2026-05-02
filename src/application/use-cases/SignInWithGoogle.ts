@@ -1,5 +1,5 @@
 import type { Result } from '@shared/result';
-import { err, isErr, ok } from '@shared/result';
+import { map } from '@shared/result';
 import type { DomainError } from '@domain/errors';
 import type { AuthService } from '@application/ports';
 import type { AuthUserDTO } from '@application/dto';
@@ -15,7 +15,6 @@ export class SignInWithGoogle implements UseCase<void, AuthUserDTO> {
 
   async execute(): Promise<Result<AuthUserDTO, DomainError>> {
     const result = await this.auth.signInWithGoogle();
-    if (isErr(result)) return err(result.error);
-    return ok(toAuthUserDTO(result.value));
+    return map(result, toAuthUserDTO);
   }
 }

@@ -1,6 +1,7 @@
 import { type FormEvent, type MouseEvent, useEffect, useRef, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { useContainer } from '@presentation/hooks';
+import { dispatchUseCase } from '@presentation/utils';
 
 export interface ClaimDialogProps {
   readonly open: boolean;
@@ -53,29 +54,19 @@ const ClaimDialogContent = ({ month, day, dateLabel, onClose }: ClaimDialogProps
     if (state.kind === 'submitting') return;
     setState({ kind: 'submitting' });
     const trimmedPhone = phone.trim();
-    container.useCases.submitClaim
-      .execute({
+    dispatchUseCase(
+      container.useCases.submitClaim.execute({
         name: name.trim(),
         email: email.trim(),
         ...(trimmedPhone ? { phone: trimmedPhone } : {}),
         month,
         day,
-      })
-      .then(
-        (result) => {
-          if (result.ok) {
-            setState({ kind: 'success', email: result.value.email });
-          } else {
-            setState({ kind: 'error', message: result.error.message });
-          }
-        },
-        (e: unknown) => {
-          setState({
-            kind: 'error',
-            message: e instanceof Error ? e.message : '未知錯誤',
-          });
-        },
-      );
+      }),
+      (r) => {
+        if (r.ok) setState({ kind: 'success', email: r.value.email });
+        else setState({ kind: 'error', message: r.error });
+      },
+    );
   };
 
   const busy = state.kind === 'submitting';

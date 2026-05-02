@@ -1,31 +1,18 @@
-import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Check, Hash, Mail } from 'lucide-react';
+import { formatChineseDate } from '@shared/date';
 import { ClaimDialog, PageFooter, PageHeader } from '@presentation/components';
-import { useDevotional } from '@presentation/hooks';
-import { formatChineseDate } from '@presentation/utils';
+import { useDayParams, useDevotional } from '@presentation/hooks';
 import cardBackground from '@presentation/assets/card-background.png';
 
 // Placeholder campaign hashtag — swap when the team picks the final one.
 const SHARE_HASHTAG = '#AWordForYourDay';
 
-const parseDate = (rawMonth: string | undefined, rawDay: string | undefined) => {
-  const m = Number(rawMonth);
-  const d = Number(rawDay);
-  if (!Number.isInteger(m) || m < 1 || m > 12) return null;
-  if (!Number.isInteger(d) || d < 1 || d > 31) return null;
-  return { month: m, day: d };
-};
-
 export const CardPage = () => {
-  const { month: rawMonth, day: rawDay } = useParams<{ month: string; day: string }>();
-  const parsed = useMemo(() => parseDate(rawMonth, rawDay), [rawMonth, rawDay]);
-
-  if (!parsed) {
-    return <InvalidDate />;
-  }
-
-  return <CardContent month={parsed.month} day={parsed.day} />;
+  const params = useDayParams();
+  if (!params) return <InvalidDate />;
+  return <CardContent month={params.month} day={params.day} />;
 };
 
 const InvalidDate = () => (

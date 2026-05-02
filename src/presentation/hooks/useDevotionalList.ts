@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { DevotionalSummaryDTO } from '@application/dto';
+import { dispatchUseCase } from '@presentation/utils';
 import { useContainer } from './useContainer';
 
 interface ListSnapshot {
@@ -22,21 +23,12 @@ export const useDevotionalList = (): ListState => {
 
   useEffect(() => {
     let cancelled = false;
-    container.useCases.listDevotionals.execute().then(
-      (result) => {
-        if (cancelled) return;
-        if (result.ok) {
-          setSnapshot({ tick, items: result.value, error: null });
-        } else {
-          setSnapshot({ tick, items: [], error: result.error.message });
-        }
-      },
-      (error: unknown) => {
-        if (cancelled) return;
-        const message = error instanceof Error ? error.message : '未知錯誤';
-        setSnapshot({ tick, items: [], error: message });
-      },
-    );
+    dispatchUseCase(container.useCases.listDevotionals.execute(), (r) => {
+      if (cancelled) return;
+      setSnapshot(
+        r.ok ? { tick, items: r.value, error: null } : { tick, items: [], error: r.error },
+      );
+    });
     return () => {
       cancelled = true;
     };
